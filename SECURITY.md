@@ -38,6 +38,19 @@ GitHub目前支持Rust的CodeQL，但Code scanning对私有仓库的可用性受
 
 Dependabot的Cargo/npm/Actions支持情况见[官方生态支持表](https://docs.github.com/en/code-security/reference/supply-chain-security/supported-ecosystems-and-repositories)，其自动修复能力取决于漏洞库、依赖解析和可用修复版本，不能保证每条告警都会生成PR。
 
+## 首次执行与已知依赖问题（2026-11-03）
+
+初始提交`d402e755`的[CI已通过](https://github.com/xcstatus/rustdesk-account-api/actions/runs/41637776050)，包括Rust双库测试和Web检查。[首次依赖扫描](https://github.com/xcstatus/rustdesk-account-api/actions/runs/41637776113)中，npm high/critical检查通过，RustSec发现以下两项，自动创建了[跟踪Issue #1](https://github.com/xcstatus/rustdesk-account-api/issues/1)。这不是无漏洞基线。
+
+| 公告 | 初始锁文件及来源 | 当前处理 |
+|---|---|---|
+| [RUSTSEC-2026-0387](https://rustsec.org/advisories/RUSTSEC-2026-0387.html) | `crypto-bigint 0.5.5`，由`openidconnect → p256/p384 → elliptic-curve`引入 | 修复分支升级`openidconnect 4.1.0`，锁定`crypto-bigint 0.7.10`，满足公告修补范围`>=0.7.6`；合并状态和检查结果以对应PR为准，未自动部署 |
+| [RUSTSEC-2023-0071](https://rustsec.org/advisories/RUSTSEC-2023-0071.html) | `rsa 0.9.10`，由`openidconnect`引入；升级后仍存在 | 官方公告暂无修补版本；保留扫描失败和跟踪，不加入ignore。下述可达性评估不等于修复 |
+
+RSA公告涉及私钥操作的时序泄露。已检查的生产OIDC路径是[初始化Relying Party](api/src/oidc.rs#L308)及[验证ID token](api/src/oidc.rs#L358)：使用IdP的JWKS验证签名，没有加载RSA私钥、签名或解密操作。`openidconnect 4.1.0`的`core/crypto.rs::verify_rsa_signature`从公开的`n/e`创建`RsaPublicKey`并调用`verify`；与库中独立的`CoreRsaPrivateSigningKey`路径不同。该调用范围中未发现公告所需的RSA私钥操作，这是可达性评估，不能宣称整个依赖已安全。来源：[4.1.0发布源码](https://docs.rs/crate/openidconnect/4.1.0/source/src/core/crypto.rs)。生产实例按上次部署记录尚未启用OIDC，本轮未重新巡检或变更生产。
+
+维护者继续跟进RSA上游修复。新增RSA签名、解密、OIDC客户端私钥认证，或更换相关库时，必须重新评估；不能沿用本结论。依赖告警未全部解决时，不将安全扫描描述为通过，也不以常规Dependabot大版本升级替代有针对性的修复评审。
+
 ## 秘密与报告
 
 不要向Issue、PR、Actions日志或文档提交密码、token、私钥、个人簿hash、生产数据库或备份。原始运行截图、`.runtime`、secrets和构建资产不入库；CI使用的测试账号和PG密码仅为隔离runner中的公开fixture。

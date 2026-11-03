@@ -12,7 +12,7 @@ base64 = "0.22"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive", "env"] }
 hex = "0.4"
-openidconnect = { version = "4.0.1", default-features = false, features = ["reqwest", "rustls-tls"] }
+openidconnect = { version = "4.1.0", default-features = false, features = ["reqwest", "rustls-tls"] }
 rand = "0.8"
 ring = "0.17"
 serde = { version = "1", features = ["derive"] }

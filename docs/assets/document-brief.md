@@ -10,6 +10,7 @@
 - downstream_consumers：Dependabot、GitHub Actions、后续安全修复及版本维护。
 - success_criteria：私有仓库与本地提交一致，私有运行材料不入库，自动化可运行，扫描结果/无法自动修复项如实记录；不宣称依赖扫描覆盖全部业务逻辑漏洞。
 - document_status：`drafted`；交付状态以仓库设置及本轮Actions结果为准。
+- 首跑证据：初始提交`d402e755`的CI运行`41637776050`通过；安全运行`41637776113`中npm通过、RustSec发现`RUSTSEC-2026-0387`和`RUSTSEC-2023-0071`。修复与RSA可达性评估归`SECURITY.md`，PR与Actions是合并及检查结果来源，不将有告警基线标为全部安全。
 
 ## 2026-11-03 项目化整理契约
 

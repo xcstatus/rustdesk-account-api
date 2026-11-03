@@ -9,6 +9,7 @@
 - 初始化Git，创建`xcstatus/rustdesk-account-api`私有仓库，公开发布与许可证仍另行决定。
 - 增加Dependabot、RustSec/npm每日扫描、失败Issue与Rust/Web CI，修复采用PR审核，不自动部署。
 - 排除原始运行截图及私有运行资产；保留脱敏JSON验收证据。
+- 首次CI通过；依赖扫描发现两项RustSec告警。提交`openidconnect 4.1.0`/`crypto-bigint 0.7.10`修复，RSA无补丁问题保留告警并记录影响范围；未自动合并或部署。
 
 ### 2026-11-03：项目文档整理
 
