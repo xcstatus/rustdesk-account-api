@@ -1,0 +1,69 @@
+{
+  "checked_at": "2026-10-31T03:43:08.285882+00:00",
+  "container": "rdaccounts-api-1",
+  "api_image_id": "sha256:1458fb963eaa91950c1da14ccaca011db22933ed0d5d069a5538bb5904596fd8",
+  "api_image_architecture": "amd64",
+  "health": "healthy",
+  "restart_count": 0,
+  "container_user": "10001:10001",
+  "readonly_root": true,
+  "host_ports": {},
+  "networks": [
+    "database-network",
+    "rdaccounts_default",
+    "traefik-network"
+  ],
+  "memory_limit": 402653184,
+  "pids_limit": 128,
+  "nano_cpus": 750000000,
+  "tls_options_label": "rustdesk-https-tls@file",
+  "oidc_configured": false,
+  "schema_version": 3,
+  "user_count": 1,
+  "active_session_count": 0,
+  "nonempty_book_count": 0,
+  "unexpected_table_owner_count": 0,
+  "unexpected_sequence_owner_count": 0,
+  "remaining_restore_database_count": 0,
+  "post_restart_http": {
+    "/healthz": 200,
+    "/readyz": 200,
+    "/admin/": 200,
+    "/ws/id": 502,
+    "/ws/relay": 502
+  },
+  "api_file_sha256": [
+    "085188852a15d5726ef63efb44d11aa10417a3bd84ae25ac6c6999c59ab5d1b8  /usr/local/bin/rustdesk-account-api",
+    "2db55369e1558277566bde3d5252d17f0566ae63d87b1560b74c25968629aaee  /app/web/dist/index.html"
+  ],
+  "stats": {
+    "BlockIO": "81.9kB / 0B",
+    "CPUPerc": "0.00%",
+    "Container": "rdaccounts-api-1",
+    "ID": "85ead52fbb16",
+    "MemPerc": "0.37%",
+    "MemUsage": "1.434MiB / 384MiB",
+    "Name": "rdaccounts-api-1",
+    "NetIO": "15.8kB / 17.4kB",
+    "PIDs": "3"
+  },
+  "preserved_services": {
+    "traefik": {
+      "running": true,
+      "started_at": "2026-10-19T02:58:42.129106571Z"
+    },
+    "postgres": {
+      "running": true,
+      "started_at": "2026-10-19T02:33:51.509602293Z"
+    },
+    "hbbs": {
+      "running": true,
+      "started_at": "2026-10-19T02:33:51.460677909Z"
+    },
+    "hbbr": {
+      "running": true,
+      "started_at": "2026-10-19T02:33:51.458788287Z"
+    }
+  },
+  "role_flags": "f|f|f|f|f"
+}

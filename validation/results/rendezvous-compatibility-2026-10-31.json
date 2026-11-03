@@ -1,0 +1,85 @@
+{
+  "recorded_at": "2026-10-31T15:00:16.774752+08:00",
+  "status": "superseded_by_pr734",
+  "source": {
+    "server_commit": "73523b31cfd25d77dee862e6fc9f5e1fb5e485ef",
+    "server_archive_sha256": "846379e1555396ba8c8f26edbfbfb7f36618ef3e5d658b6022ed24617cf7edfa",
+    "hbb_common": "83419b6549636ee39dacef7776c473f5802e08d6",
+    "common_archive_sha256": "5049b824df2567106907e22ae048f6b45bb9551a8eac5eac125571b87a826d6a"
+  },
+  "scope": "opt-in hbbs main TCP handshake only, no API token validation or remote ACL",
+  "protocol": {
+    "advertised_version": 1,
+    "accepted_key_exchange_version": 1,
+    "direction_split": true,
+    "signed_parameters": true,
+    "empty_heartbeat_does_not_advance_nonce": true
+  },
+  "native": {
+    "module_tests": {
+      "status": "passed",
+      "passed": 11
+    },
+    "hbbs_build": "passed",
+    "process_integration_tests": {
+      "status": "passed",
+      "passed": 6,
+      "cases": [
+        "official_directional_key_vectors",
+        "encrypted_and_plain_connections_same_server_key_with_empty_heartbeat",
+        "opt_in_disabled_plain_first_frame",
+        "version_zero_downgrade_closes_connection",
+        "encrypted_async_cached_sink_punch_response",
+        "missing_or_mismatched_signing_key_refuses_startup"
+      ]
+    },
+    "cargo_lock_unchanged": true
+  },
+  "linux_amd64": "pending",
+  "production_changed": false,
+  "existing_server_key_preflight": {
+    "private_length_valid": true,
+    "public_half_and_seed_match": true,
+    "configured_key_matches": true,
+    "public_sha256": "b46df5ea550b597b78504e33c96a5ec7ff1f23fefd1a22cc1b297111aefae31d",
+    "key_material_in_report": false
+  },
+  "independent_review": {
+    "status": "no_blocking_implementation_findings",
+    "fixed_legacy_v0_nonce_reuse": true,
+    "tests_not_executed_by_reviewer": true
+  },
+  "files": {
+    "src/account_secure_tcp.rs": "9fbec479ec6be39d14de4bad8bbfad55cca1c2a45b458bc0405bbe85b81018f9",
+    "src/rendezvous_server.rs": "8ecacb57421aa077bd1d0e08b939558bc4930bdfc43b731389812b0f728c6695",
+    "src/lib.rs": "3d18b1fbf7cd084db718d04fe13a2fe97f16a0f0d74894464e5c9976caf25599",
+    "libs/hbb_common/protos/rendezvous.proto": "0c66bad54d303cb52d6d07c2194120b2ce8495bb6819ec15ef956a49357c5546",
+    "tests/account_secure_tcp.rs": "0fdeaf77af42b7c73f029ff99b243abb4cbc07e88e682851002e382b9554ab54"
+  },
+  "cargo_lock_sha256": "cc121631f7596d4662a638cccde70b63a403a227d3c68c82da001bd021c83365",
+  "official_client_manual_after_patch": "pending",
+  "patch_application": {
+    "dry_run": "passed",
+    "clean_fixed_version_application": "passed",
+    "matches_validated_sources": true,
+    "patch_sha256": "1966f94a28454491e4950e63cc24a177b6224632944dba5b0dd975efe0241078"
+  },
+  "production_compose_preview": {
+    "status": "passed",
+    "hbbs_changed_fields": [
+      "environment",
+      "image",
+      "pull_policy"
+    ],
+    "original_image": "rustdesk/rustdesk-server:1.1.16@sha256:8ecdab65deb7c84652a626380e31d11a8f1fbafd97916d57f95c20628f943c00",
+    "target_image": "rustdesk-hbbs-account-compat:1.1.16-v1-amd64",
+    "command_preserved": true,
+    "network_preserved": true,
+    "mounts_preserved": true,
+    "other_services_preserved": true,
+    "configuration_applied": false
+  },
+  "selected_for_deployment": false,
+  "historical_validation_status": "native_verified_linux_pending",
+  "superseded_by": "rendezvous-pr734-validation-2026-10-31.json"
+}

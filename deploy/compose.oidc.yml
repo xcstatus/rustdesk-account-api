@@ -1,0 +1,16 @@
+services:
+  api:
+    environment:
+      RD_OIDC_ISSUER: ${RD_OIDC_ISSUER:?set OIDC issuer}
+      RD_OIDC_CLIENT_ID: ${RD_OIDC_CLIENT_ID:?set OIDC client ID}
+      RD_OIDC_REDIRECT_URI: ${RD_WEB_ORIGIN:?set full HTTPS origin}/api/oidc/callback
+      RD_OIDC_CLIENT_SECRET_FILE: /run/secrets/oidc_client_secret
+      RD_OIDC_CLAIM_PATH: ${RD_OIDC_CLAIM_PATH:-groups}
+      RD_OIDC_ADMIN_VALUES: ${RD_OIDC_ADMIN_VALUES:-}
+      RD_OIDC_MEMBER_VALUES: ${RD_OIDC_MEMBER_VALUES:-}
+      RD_OIDC_UNMATCHED: ${RD_OIDC_UNMATCHED:-deny}
+    secrets:
+      - oidc_client_secret
+secrets:
+  oidc_client_secret:
+    file: ${RD_SECRETS_DIR:-./.secrets}/oidc_client_secret

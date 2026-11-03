@@ -1,0 +1,110 @@
+{
+  "status": "passed",
+  "cleanup_status": "passed",
+  "cases": [
+    {
+      "id": "HEALTH",
+      "status": "passed"
+    },
+    {
+      "id": "READY",
+      "status": "passed"
+    },
+    {
+      "id": "ADMIN_HTML",
+      "status": "passed"
+    },
+    {
+      "id": "HTTP_REDIRECT",
+      "status": "passed"
+    },
+    {
+      "id": "OIDC_CLIENT_DISABLED",
+      "status": "passed"
+    },
+    {
+      "id": "OIDC_WEB_DISABLED",
+      "status": "passed"
+    },
+    {
+      "id": "UNAUTHENTICATED_BOOK",
+      "status": "passed"
+    },
+    {
+      "id": "WEB_LOGIN",
+      "status": "passed"
+    },
+    {
+      "id": "WEB_ME",
+      "status": "passed"
+    },
+    {
+      "id": "WEB_ADMIN_USERS",
+      "status": "passed"
+    },
+    {
+      "id": "WEB_AUDIT_FILTER",
+      "status": "passed"
+    },
+    {
+      "id": "WEB_ORIGIN_GUARD",
+      "status": "passed"
+    },
+    {
+      "id": "CLIENT_LOGIN_1",
+      "status": "passed"
+    },
+    {
+      "id": "CLIENT_LOGIN_2",
+      "status": "passed"
+    },
+    {
+      "id": "CLIENT_DISTINCT_SESSIONS",
+      "status": "passed"
+    },
+    {
+      "id": "CLIENT_WEB_SESSION_ISOLATION",
+      "status": "passed"
+    },
+    {
+      "id": "CLIENT_IDENTITY",
+      "status": "passed"
+    },
+    {
+      "id": "BOOK_EMPTY_GUARD",
+      "status": "passed"
+    },
+    {
+      "id": "BOOK_WRITE_1",
+      "status": "passed"
+    },
+    {
+      "id": "BOOK_SYNC_2_CREDENTIAL_STRIP",
+      "status": "passed"
+    },
+    {
+      "id": "BOOK_WRITE_2",
+      "status": "passed"
+    },
+    {
+      "id": "BOOK_SYNC_1_CREDENTIAL_STRIP",
+      "status": "passed"
+    },
+    {
+      "id": "BOOK_RESTORE",
+      "status": "passed"
+    },
+    {
+      "id": "CLIENT_LOGOUT_1",
+      "status": "passed"
+    },
+    {
+      "id": "CLIENT_LOGOUT_2",
+      "status": "passed"
+    },
+    {
+      "id": "WEB_LOGOUT_1",
+      "status": "passed"
+    }
+  ]
+}

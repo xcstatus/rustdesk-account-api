@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust:
+    name: Rust / SQLite + PostgreSQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: rustdesk_test
+          POSTGRES_PASSWORD: isolated-ci-only
+          POSTGRES_DB: rustdesk_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rustdesk_test -d rustdesk_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      CARGO_TERM_COLOR: always
+      # Ephemeral service only; these tests create schemas and apply migrations.
+      DATABASE_URL: postgres://rustdesk_test:isolated-ci-only@localhost:5432/rustdesk_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: rustup toolchain install 1.93.1 --profile minimal --component rustfmt
+      - name: Check formatting
+        run: cargo +1.93.1 fmt --manifest-path api/Cargo.toml --check
+      - name: Test API with both databases
+        run: cargo +1.93.1 test --locked --manifest-path api/Cargo.toml -- --test-threads=1
+
+  web:
+    name: Web / tests + build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22.22.1'
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm test
+      - run: npm run build

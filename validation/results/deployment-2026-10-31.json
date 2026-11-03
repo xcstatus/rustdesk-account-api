@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-31",
+  "deployment_status": "deployed_verified",
+  "host_alias": "me-aliyun",
+  "origin": "https://desk.166198.xyz",
+  "database": {
+    "mode": "existing-container",
+    "database": "rustdesk_accounts",
+    "version": "16.10",
+    "transport": "same-host Docker network; TLS disabled",
+    "dedicated_owner": true
+  },
+  "oidc_enabled": false,
+  "image": {
+    "tag": "rustdesk-account-api:0.1.0-m3-amd64",
+    "id": "sha256:1458fb963eaa91950c1da14ccaca011db22933ed0d5d069a5538bb5904596fd8",
+    "platform": "linux/amd64",
+    "binary_sha256": "085188852a15d5726ef63efb44d11aa10417a3bd84ae25ac6c6999c59ab5d1b8",
+    "web_index_sha256": "2db55369e1558277566bde3d5252d17f0566ae63d87b1560b74c25968629aaee",
+    "archive_sha256": "6a45b0e735adda4772fea89bede902aff71fa781fcf6b1274552d3878268383b",
+    "archive_bytes": 45344898,
+    "public_registry_publication": false
+  },
+  "tls": {
+    "hostname": "desk.166198.xyz",
+    "system_trust_verified": true,
+    "tls_version": "TLSv1.3",
+    "certificate_sha256": "38f3b7457de31b15a3642e01fd5dfe7b6b8a3301574c68391ba9460f280a6d4f",
+    "not_before": "Oct 13 02:21:18 2026 GMT",
+    "not_after": "Jan 11 02:21:17 2027 GMT",
+    "subject_alt_names": [
+      [
+        "DNS",
+        "desk.166198.xyz"
+      ]
+    ]
+  },
+  "checks": {
+    "production_http": 26,
+    "backup_restore": 8,
+    "cleanup": "passed",
+    "post_restart_health": "passed"
+  },
+  "reports": {
+    "http": "deployment-smoke-2026-10-31.json",
+    "backup": "deployment-backup-2026-10-31.json",
+    "final_state": "deployment-state-2026-10-31.json",
+    "source_manifest": "deployment-source-manifest-2026-10-31.json",
+    "source_manifest_sha256": "ba68d55cfb0e1ca03283684c40f6c64cb68125daa1213f32643d0c081ea5ec8d"
+  },
+  "known_limits": [
+    "pre-existing /ws/id and /ws/relay return HTTP 502 before and after deployment",
+    "production OIDC disabled",
+    "no production GUI client test in this deployment; M0 historical GUI evidence retained",
+    "backup is on the same host; scheduled/offsite backup and external alerting not configured",
+    "new ACME issuance/renewal, sustained load, multi-instance and historic Linux-image rollback not verified"
+  ],
+  "source_api_web_unchanged_from_m23": true
+}

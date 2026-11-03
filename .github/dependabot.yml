@@ -1,0 +1,67 @@
+version: 2
+updates:
+  # Weekly version updates; repository settings enable immediate security PRs.
+  - package-ecosystem: cargo
+    directory: /api
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 2
+    groups:
+      rust-version-updates:
+        applies-to: version-updates
+        patterns: ['*']
+
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 2
+    groups:
+      web-version-updates:
+        applies-to: version-updates
+        patterns: ['*']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 2
+    groups:
+      actions-version-updates:
+        applies-to: version-updates
+        patterns: ['*']
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 2
+    groups:
+      api-image-version-updates:
+        applies-to: version-updates
+        patterns: ['*']
+
+  - package-ecosystem: docker
+    directory: /deploy/rustdesk-pr734
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 2
+    groups:
+      server-image-version-updates:
+        applies-to: version-updates
+        patterns: ['*']

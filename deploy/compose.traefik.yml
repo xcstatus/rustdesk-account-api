@@ -1,0 +1,36 @@
+# Overlay for compose.external-postgres.yml when Traefik already owns HTTPS.
+# Both external networks must already exist; no database or proxy is recreated.
+services:
+  caddy:
+    profiles: [standalone-caddy]
+  api:
+    networks:
+      - default
+      - proxy
+      - database
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: ${RD_TRAEFIK_NETWORK:?set existing Traefik network}
+      traefik.http.routers.rdaccounts.rule: Host(`${RD_DOMAIN:?set RD_DOMAIN}`)
+      traefik.http.routers.rdaccounts.entrypoints: ${RD_TRAEFIK_HTTPS_ENTRYPOINT:-websecure}
+      traefik.http.routers.rdaccounts.tls: "true"
+      traefik.http.routers.rdaccounts.tls.certresolver: ${RD_TRAEFIK_CERTRESOLVER:?set existing certificate resolver}
+      traefik.http.routers.rdaccounts.service: rdaccounts
+      traefik.http.routers.rdaccounts.observability.accesslogs: "false"
+      traefik.http.routers.rdaccounts.observability.tracing: "false"
+      traefik.http.services.rdaccounts.loadbalancer.server.port: "21114"
+      traefik.http.routers.rdaccounts-http.rule: Host(`${RD_DOMAIN:?set RD_DOMAIN}`)
+      traefik.http.routers.rdaccounts-http.entrypoints: ${RD_TRAEFIK_HTTP_ENTRYPOINT:-web}
+      traefik.http.routers.rdaccounts-http.service: rdaccounts
+      traefik.http.routers.rdaccounts-http.middlewares: rdaccounts-https
+      traefik.http.routers.rdaccounts-http.observability.accesslogs: "false"
+      traefik.http.routers.rdaccounts-http.observability.tracing: "false"
+      traefik.http.middlewares.rdaccounts-https.redirectscheme.scheme: https
+      traefik.http.middlewares.rdaccounts-https.redirectscheme.permanent: "true"
+networks:
+  proxy:
+    external: true
+    name: ${RD_TRAEFIK_NETWORK:?set existing Traefik network}
+  database:
+    external: true
+    name: ${RD_DATABASE_NETWORK:?set existing PostgreSQL network}

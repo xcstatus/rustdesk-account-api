@@ -1,0 +1,520 @@
+{
+  "schema_version": 1,
+  "validation_date": "2026-10-31",
+  "timezone": "Asia/Shanghai",
+  "recorded_at": "2026-10-30T18:44:19.157265+00:00",
+  "milestone": "M1",
+  "status": "pass",
+  "scope": "Account management and basic Web UI; local development, not full P0 or production acceptance",
+  "api_binary_sha256": "9e2d0583916bb336c92f50fa73a896fa99f2b10ed185011efad7a3815cfd8b8d",
+  "web_build": {
+    "assets": [
+      {
+        "path": "web/dist/assets/index-BL6tbBNh.js",
+        "sha256": "35897961517125d42a5b8ee3ae26114ec7d8ac94e0f5f07f12fec76a6e62a389",
+        "bytes": 88442
+      },
+      {
+        "path": "web/dist/assets/index-DDRGwSYu.css",
+        "sha256": "cea978b22b483e25fa5d5420764cfe1365ac620ff765211afed0977d66d4f093",
+        "bytes": 10189
+      },
+      {
+        "path": "web/dist/index.html",
+        "sha256": "725835ae7fef00632d574d0d34e708450c8a7861d48ff24849a6b010a4b19228",
+        "bytes": 469
+      }
+    ],
+    "package_lock_sha256": "de4f8f5030fa3db73df9d75e53860cf6189f09b93876dc3da920ac874aaa9d47",
+    "reported_by_frontend_worker": {
+      "npm_ci": "pass",
+      "npm_test": {
+        "status": "pass",
+        "tests": 4
+      },
+      "typecheck": "pass",
+      "production_build": "pass",
+      "node": "22.22.1"
+    }
+  },
+  "environment": {
+    "os": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "postgres": "16.15",
+    "keycloak": "26.8.1",
+    "compose_project": "rustdesk-m0"
+  },
+  "rust_verification": {
+    "status": "pass",
+    "tests": 19,
+    "postgres_enabled": true,
+    "database": "m1_checks_a5c3dad7a8ddfe02",
+    "seconds": 36.218,
+    "finished_at": "2026-10-30T18:33:03.246363+00:00",
+    "api_binary_sha256": "9e2d0583916bb336c92f50fa73a896fa99f2b10ed185011efad7a3815cfd8b8d"
+  },
+  "static_checks": {
+    "cargo_clippy_all_targets_deny_warnings": "pass",
+    "cargo_fmt_check": "pass"
+  },
+  "cli_bootstrap": {
+    "case": "cli.bootstrap-admin-once-only",
+    "status": "pass",
+    "first_exit": 0,
+    "second_exit": 1,
+    "recorded_at": "2026-10-30T18:35:36.346746+00:00"
+  },
+  "http_validation": {
+    "m1": {
+      "total_cases": 40,
+      "passed_cases": 40,
+      "runs": [
+        {
+          "database": "sqlite",
+          "namespace": "20261030184327_0c7358cd",
+          "scope": "real loopback HTTP Web management and Keycloak forms/cookies; run M0 independently",
+          "cases": [
+            {
+              "case": "setup.isolated-database-cli-users-api",
+              "status": "pass",
+              "seconds": 3.077
+            },
+            {
+              "case": "web.options-local-login-cookie-me",
+              "status": "pass",
+              "seconds": 0.308
+            },
+            {
+              "case": "web.login-origin-json-wrong-password",
+              "status": "pass",
+              "seconds": 0.336
+            },
+            {
+              "case": "web.client-session-purpose-isolation",
+              "status": "pass",
+              "seconds": 0.332
+            },
+            {
+              "case": "users.create-list-conflict-input-boundaries",
+              "status": "pass",
+              "seconds": 1.482
+            },
+            {
+              "case": "users.member-admin-routes-forbidden",
+              "status": "pass",
+              "seconds": 0.005
+            },
+            {
+              "case": "web.all-mutations-origin-csrf",
+              "status": "pass",
+              "seconds": 0.023
+            },
+            {
+              "case": "users.local-role-promotion-demotion",
+              "status": "pass",
+              "seconds": 0.305
+            },
+            {
+              "case": "users.local-disable-enable-revokes-all-kinds",
+              "status": "pass",
+              "seconds": 1.224
+            },
+            {
+              "case": "users.local-admin-password-reset",
+              "status": "pass",
+              "seconds": 1.508
+            },
+            {
+              "case": "users.local-self-password-change",
+              "status": "pass",
+              "seconds": 2.415
+            },
+            {
+              "case": "sessions.shape-scope-selected-and-admin-revocation",
+              "status": "pass",
+              "seconds": 0.912
+            },
+            {
+              "case": "sessions.self-all-revocation",
+              "status": "pass",
+              "seconds": 0.912
+            },
+            {
+              "case": "oidc.web-real-browser-pkce-cookie-callback-replay",
+              "status": "pass",
+              "seconds": 0.902
+            },
+            {
+              "case": "oidc.web-missing-wrong-browser-binding",
+              "status": "pass",
+              "seconds": 0.123
+            },
+            {
+              "case": "oidc.web-client-attempt-purpose-isolation",
+              "status": "pass",
+              "seconds": 0.21
+            },
+            {
+              "case": "oidc.provider-managed-role-password-conflicts",
+              "status": "pass",
+              "seconds": 0.31
+            },
+            {
+              "case": "oidc.disable-enable-requires-fresh-admission",
+              "status": "pass",
+              "seconds": 0.175
+            },
+            {
+              "case": "users.missing-targets",
+              "status": "pass",
+              "seconds": 0.298
+            },
+            {
+              "case": "web.logout-cookie-revocation",
+              "status": "pass",
+              "seconds": 0.614
+            }
+          ],
+          "status": "pass",
+          "milestone": "M1",
+          "planned_cases": 20,
+          "web_session_ttl_seconds": 28800,
+          "api_binary_sha256": "9e2d0583916bb336c92f50fa73a896fa99f2b10ed185011efad7a3815cfd8b8d",
+          "finished_at": "2026-10-30T18:43:43.178741+00:00"
+        },
+        {
+          "database": "postgres",
+          "namespace": "20261030183341_2a282761",
+          "scope": "real loopback HTTP Web management and Keycloak forms/cookies; run M0 independently",
+          "cases": [
+            {
+              "case": "setup.isolated-database-cli-users-api",
+              "status": "pass",
+              "seconds": 4.82
+            },
+            {
+              "case": "web.options-local-login-cookie-me",
+              "status": "pass",
+              "seconds": 0.313
+            },
+            {
+              "case": "web.login-origin-json-wrong-password",
+              "status": "pass",
+              "seconds": 0.331
+            },
+            {
+              "case": "web.client-session-purpose-isolation",
+              "status": "pass",
+              "seconds": 0.338
+            },
+            {
+              "case": "users.create-list-conflict-input-boundaries",
+              "status": "pass",
+              "seconds": 1.51
+            },
+            {
+              "case": "users.member-admin-routes-forbidden",
+              "status": "pass",
+              "seconds": 0.014
+            },
+            {
+              "case": "web.all-mutations-origin-csrf",
+              "status": "pass",
+              "seconds": 0.048
+            },
+            {
+              "case": "users.local-role-promotion-demotion",
+              "status": "pass",
+              "seconds": 0.327
+            },
+            {
+              "case": "users.local-disable-enable-revokes-all-kinds",
+              "status": "pass",
+              "seconds": 1.25
+            },
+            {
+              "case": "users.local-admin-password-reset",
+              "status": "pass",
+              "seconds": 1.523
+            },
+            {
+              "case": "users.local-self-password-change",
+              "status": "pass",
+              "seconds": 2.395
+            },
+            {
+              "case": "sessions.shape-scope-selected-and-admin-revocation",
+              "status": "pass",
+              "seconds": 0.953
+            },
+            {
+              "case": "sessions.self-all-revocation",
+              "status": "pass",
+              "seconds": 0.92
+            },
+            {
+              "case": "oidc.web-real-browser-pkce-cookie-callback-replay",
+              "status": "pass",
+              "seconds": 0.141
+            },
+            {
+              "case": "oidc.web-missing-wrong-browser-binding",
+              "status": "pass",
+              "seconds": 0.119
+            },
+            {
+              "case": "oidc.web-client-attempt-purpose-isolation",
+              "status": "pass",
+              "seconds": 0.212
+            },
+            {
+              "case": "oidc.provider-managed-role-password-conflicts",
+              "status": "pass",
+              "seconds": 0.296
+            },
+            {
+              "case": "oidc.disable-enable-requires-fresh-admission",
+              "status": "pass",
+              "seconds": 0.205
+            },
+            {
+              "case": "users.missing-targets",
+              "status": "pass",
+              "seconds": 0.302
+            },
+            {
+              "case": "web.logout-cookie-revocation",
+              "status": "pass",
+              "seconds": 0.629
+            }
+          ],
+          "status": "pass",
+          "milestone": "M1",
+          "planned_cases": 20,
+          "web_session_ttl_seconds": 28800,
+          "api_binary_sha256": "9e2d0583916bb336c92f50fa73a896fa99f2b10ed185011efad7a3815cfd8b8d",
+          "postgres_server_version": "16.15",
+          "finished_at": "2026-10-30T18:33:58.273902+00:00"
+        }
+      ]
+    },
+    "m0_regression": {
+      "total_cases": 30,
+      "passed_cases": 30,
+      "runs": [
+        {
+          "database": "sqlite",
+          "namespace": "20261030183436_f6d508dd",
+          "scope": "real Keycloak authorization-code + PKCE via HTTP forms/cookies; no official client GUI",
+          "cases": [
+            {
+              "case": "setup.isolated-database-cli-users-api",
+              "status": "pass",
+              "seconds": 0.958
+            },
+            {
+              "case": "local.wrong-password",
+              "status": "pass",
+              "seconds": 0.318
+            },
+            {
+              "case": "local.correct-password-two-devices",
+              "status": "pass",
+              "seconds": 0.908
+            },
+            {
+              "case": "local.book-sync-isolation-metadata-invalid-snapshot",
+              "status": "pass",
+              "seconds": 0.057
+            },
+            {
+              "case": "local.logout-all-protected-routes-401",
+              "status": "pass",
+              "seconds": 0.057
+            },
+            {
+              "case": "oidc.options",
+              "status": "pass",
+              "seconds": 0.006
+            },
+            {
+              "case": "oidc.code-pkce-pendingexact-wrongbinding-invalidstate",
+              "status": "pass",
+              "seconds": 0.054
+            },
+            {
+              "case": "oidc.member-real-browser-jit-repeat-single-use",
+              "status": "pass",
+              "seconds": 0.249
+            },
+            {
+              "case": "oidc.book-sync-isolation-metadata-invalid-snapshot",
+              "status": "pass",
+              "seconds": 0.053
+            },
+            {
+              "case": "oidc.logout-all-protected-routes-401",
+              "status": "pass",
+              "seconds": 0.062
+            },
+            {
+              "case": "oidc.admin-wins-both-groups",
+              "status": "pass",
+              "seconds": 0.115
+            },
+            {
+              "case": "oidc.unmatched-default-deny",
+              "status": "pass",
+              "seconds": 0.096
+            },
+            {
+              "case": "oidc.configurable-member-fallback-policy-revocation",
+              "status": "pass",
+              "seconds": 0.404
+            },
+            {
+              "case": "oidc.bad-exchange-never-member-fallback",
+              "status": "pass",
+              "seconds": 0.062
+            },
+            {
+              "case": "oidc.restore-deny-removes-existing-admission",
+              "status": "pass",
+              "seconds": 0.369
+            }
+          ],
+          "status": "pass",
+          "api_binary_sha256": "9e2d0583916bb336c92f50fa73a896fa99f2b10ed185011efad7a3815cfd8b8d",
+          "finished_at": "2026-10-30T18:34:39.786406+00:00"
+        },
+        {
+          "database": "postgres",
+          "namespace": "20261030183512_997e38e6",
+          "scope": "real Keycloak authorization-code + PKCE via HTTP forms/cookies; no official client GUI",
+          "cases": [
+            {
+              "case": "setup.isolated-database-cli-users-api",
+              "status": "pass",
+              "seconds": 1.703
+            },
+            {
+              "case": "local.wrong-password",
+              "status": "pass",
+              "seconds": 0.317
+            },
+            {
+              "case": "local.correct-password-two-devices",
+              "status": "pass",
+              "seconds": 0.919
+            },
+            {
+              "case": "local.book-sync-isolation-metadata-invalid-snapshot",
+              "status": "pass",
+              "seconds": 0.12
+            },
+            {
+              "case": "local.logout-all-protected-routes-401",
+              "status": "pass",
+              "seconds": 0.067
+            },
+            {
+              "case": "oidc.options",
+              "status": "pass",
+              "seconds": 0.006
+            },
+            {
+              "case": "oidc.code-pkce-pendingexact-wrongbinding-invalidstate",
+              "status": "pass",
+              "seconds": 0.053
+            },
+            {
+              "case": "oidc.member-real-browser-jit-repeat-single-use",
+              "status": "pass",
+              "seconds": 0.238
+            },
+            {
+              "case": "oidc.book-sync-isolation-metadata-invalid-snapshot",
+              "status": "pass",
+              "seconds": 0.065
+            },
+            {
+              "case": "oidc.logout-all-protected-routes-401",
+              "status": "pass",
+              "seconds": 0.064
+            },
+            {
+              "case": "oidc.admin-wins-both-groups",
+              "status": "pass",
+              "seconds": 0.108
+            },
+            {
+              "case": "oidc.unmatched-default-deny",
+              "status": "pass",
+              "seconds": 0.081
+            },
+            {
+              "case": "oidc.configurable-member-fallback-policy-revocation",
+              "status": "pass",
+              "seconds": 0.467
+            },
+            {
+              "case": "oidc.bad-exchange-never-member-fallback",
+              "status": "pass",
+              "seconds": 0.049
+            },
+            {
+              "case": "oidc.restore-deny-removes-existing-admission",
+              "status": "pass",
+              "seconds": 0.399
+            }
+          ],
+          "status": "pass",
+          "api_binary_sha256": "9e2d0583916bb336c92f50fa73a896fa99f2b10ed185011efad7a3815cfd8b8d",
+          "postgres_server_version": "16.15",
+          "finished_at": "2026-10-30T18:35:17.644604+00:00"
+        }
+      ]
+    }
+  },
+  "browser": {
+    "report": "validation/results/m1-browser-2026-10-31.json",
+    "checks": 6,
+    "status": "pass"
+  },
+  "independent_review": {
+    "scope": "Read-only code and test-content review of transactions, authentication, OIDC, migration and static path containment",
+    "p1_p2_findings": 0
+  },
+  "excluded_attempts": [
+    {
+      "report": "validation/.runtime/sqlite_20261030183157_8fac211f/report.json",
+      "reason": "Earlier passing run used a different build fingerprint; replaced by final-build run"
+    },
+    {
+      "report": "validation/.runtime/sqlite_20261030184158_cd7921ec/report.json",
+      "reason": "Setup failed because Keycloak discovery was not ready immediately after dependency restart; raw API log confirmed discovery failure. Repeated after readiness succeeded."
+    }
+  ],
+  "cleanup": {
+    "api": "stopped",
+    "keycloak": "stopped",
+    "postgres": "stopped",
+    "loopback_ports": {
+      "21114": "closed",
+      "18080": "closed",
+      "15432": "closed"
+    },
+    "databases_fixtures_volumes": "preserved",
+    "browser_test_sessions": "both revoked; 0 active in browser fixture",
+    "rustdesk_client_configuration": "not changed during M1"
+  },
+  "unverified": [
+    "No new official RustDesk GUI run on M1 build; prior M0 macOS GUI evidence remains historical, current protocol covered by automated regression",
+    "Full audit query/UI, production TLS/proxy trust, capacity, backup/restore and other client platforms remain outside this milestone",
+    "Browser smoke covered login, account/session views and logout; account/password mutations are proven by HTTP/Rust suites"
+  ],
+  "security_scope": {
+    "public_report": "No passwords, bearer tokens, raw authorization URLs/codes or raw logs",
+    "web_browser_binding": "Dedicated host-only temporary cookie; client poll cannot collect Web attempts",
+    "credentials": "Web/client session kinds isolated; CSRF and Origin validated; runtime fixtures ignored"
+  }
+}

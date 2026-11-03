@@ -1,0 +1,11 @@
+# Existing me-aliyun OSS server profile; combine with its original compose.yml.
+services:
+  hbbs:
+    image: rustdesk-hbbs-pr734:ef2166f7-amd64
+    pull_policy: never
+    command: ["-p", "31116", "-k", "_"]
+    environment:
+      SECURE_TCP: "Y"
+      IPV6_PUNCH: "N"
+      WEBRTC: "N"
+      UDP_PUNCH: "N"

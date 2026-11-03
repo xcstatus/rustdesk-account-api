@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+.secrets/
+backups/
+runtime/
+__pycache__/

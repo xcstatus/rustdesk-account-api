@@ -1,0 +1,2 @@
+# Preserve patch hunk/context whitespace from upstream.
+*.patch -whitespace

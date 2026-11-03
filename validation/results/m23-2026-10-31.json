@@ -1,0 +1,1244 @@
+{
+  "date": "2026-10-31",
+  "milestone": "M2/M3",
+  "status": "pass",
+  "scope": "sync专项、账号审计、单实例运维包及本机验收；未部署实际生产服务器",
+  "counts": {
+    "rust_tests": 35,
+    "frontend_tests": 9,
+    "http_cases": 146,
+    "cli_config_cases": 6,
+    "operations_cases": 13,
+    "browser_checks": 6
+  },
+  "environment": {
+    "host": "macOS 27.0.1 arm64",
+    "rust": "1.93.1",
+    "node": "22.22.1",
+    "docker": "28.3.3 OrbStack",
+    "postgres": "16.15",
+    "keycloak": "26.8.1",
+    "container_platform": "linux/arm64"
+  },
+  "build": {
+    "http_binary_sha256": "6807fb4221c0cec5b14ef5a28941badf7fdaab835085cf613c9cca1763194c91",
+    "docker_image_id": "sha256:c8f6f5f5622235aca6db75417a9ddbb438aae483f20f7f110f81e1ca66a3d0d2",
+    "docker_binary_sha256": "a090dc0ee0e4eb1ec092d3f52aacca231e1833ca27eee9ae43a5200403974c9f",
+    "cargo_lock_sha256": "fed95bbe5062d9c0f3e02d6e464e4635c92483fc8beb25193f344091a7793d28",
+    "npm_lock_sha256": "de4f8f5030fa3db73df9d75e53860cf6189f09b93876dc3da920ac874aaa9d47",
+    "web_assets": {
+      "web/dist/assets/index-BII8jruV.css": "258b573ae164a243406c40806e98774107ce47461c577dee138174fdfad2f139",
+      "web/dist/assets/index-DGbHCVWl.js": "e7d352d4ec822feefd45f6abf48daba448ec6e6be293efec6f9fefd4af0108b9",
+      "web/dist/index.html": "2db55369e1558277566bde3d5252d17f0566ae63d87b1560b74c25968629aaee"
+    },
+    "source_manifest_sha256": "194b8d5c8e161bdab83a85f5c4d3e6d69e168a07ff7bc145c9d5970d21659958"
+  },
+  "rust": {
+    "status": "pass",
+    "tests": 35,
+    "postgres_enabled": true,
+    "migration": "v1/v2->v3",
+    "fault_injection": "SQLite and PostgreSQL audit INSERT failure rolls back account/password/session/policy",
+    "fmt": "pass",
+    "clippy_all_targets_deny_warnings": "pass",
+    "private_log": "validation/.runtime/m23-cargo-final.log"
+  },
+  "frontend": {
+    "status": "pass",
+    "tests": 9,
+    "typecheck": "pass",
+    "build": "pass"
+  },
+  "cli_config": {
+    "api_binary_sha256": "6807fb4221c0cec5b14ef5a28941badf7fdaab835085cf613c9cca1763194c91",
+    "cases": 6,
+    "status": "pass",
+    "scope": "CLI precedence, FILE loading, ambiguous sources, empty and missing FILE rejection"
+  },
+  "http_runs": [
+    {
+      "runner": "run_m2.py",
+      "source_report": "validation/.runtime/sqlite_20261031012420_0172144b/report.json",
+      "database": "sqlite",
+      "namespace": "20261031012420_0172144b",
+      "scope": "two independent HTTP protocol clients; isolated SQL and real Keycloak; no new official GUI two-client claim",
+      "cases": [
+        {
+          "case": "setup.isolated-database-cli-users-api",
+          "status": "pass",
+          "seconds": 1.368
+        },
+        {
+          "case": "local.two-independent-sessions-empty-book",
+          "status": "pass",
+          "seconds": 1.149
+        },
+        {
+          "case": "local.add-chinese-edit-tag-colors-delete-clear",
+          "status": "pass",
+          "seconds": 0.012
+        },
+        {
+          "case": "local.metadata-only-credential-exclusion",
+          "status": "pass",
+          "seconds": 0.005
+        },
+        {
+          "case": "local.ownership-forged-user-ids",
+          "status": "pass",
+          "seconds": 0.009
+        },
+        {
+          "case": "local.invalid-json-shape-fields-atomic-rejection",
+          "status": "pass",
+          "seconds": 0.03
+        },
+        {
+          "case": "local.capacity-1000-accepted-1001-rejected",
+          "status": "pass",
+          "seconds": 0.039
+        },
+        {
+          "case": "local.body-over-2mib-rejected",
+          "status": "pass",
+          "seconds": 0.011
+        },
+        {
+          "case": "local.concurrent-whole-snapshots-atomic-last-commit",
+          "status": "pass",
+          "seconds": 0.134
+        },
+        {
+          "case": "local.restart-session-and-book-persistence",
+          "status": "pass",
+          "seconds": 0.29
+        },
+        {
+          "case": "local.real-child-offline-unsent-write-not-persisted",
+          "status": "pass",
+          "seconds": 0.296
+        },
+        {
+          "case": "local.revoked-session-read-write-401",
+          "status": "pass",
+          "seconds": 0.022
+        },
+        {
+          "case": "oidc.two-independent-sessions-empty-book",
+          "status": "pass",
+          "seconds": 2.739
+        },
+        {
+          "case": "oidc.add-chinese-edit-tag-colors-delete-clear",
+          "status": "pass",
+          "seconds": 0.026
+        },
+        {
+          "case": "oidc.metadata-only-credential-exclusion",
+          "status": "pass",
+          "seconds": 0.014
+        },
+        {
+          "case": "oidc.ownership-forged-user-ids",
+          "status": "pass",
+          "seconds": 0.018
+        },
+        {
+          "case": "oidc.invalid-json-shape-fields-atomic-rejection",
+          "status": "pass",
+          "seconds": 0.075
+        },
+        {
+          "case": "oidc.capacity-1000-accepted-1001-rejected",
+          "status": "pass",
+          "seconds": 0.091
+        },
+        {
+          "case": "oidc.body-over-2mib-rejected",
+          "status": "pass",
+          "seconds": 0.02
+        },
+        {
+          "case": "oidc.concurrent-whole-snapshots-atomic-last-commit",
+          "status": "pass",
+          "seconds": 0.313
+        },
+        {
+          "case": "oidc.restart-session-and-book-persistence",
+          "status": "pass",
+          "seconds": 0.295
+        },
+        {
+          "case": "oidc.real-child-offline-unsent-write-not-persisted",
+          "status": "pass",
+          "seconds": 0.3
+        },
+        {
+          "case": "oidc.revoked-session-read-write-401",
+          "status": "pass",
+          "seconds": 0.008
+        },
+        {
+          "case": "capabilities.legacy-and-empty-team-routes",
+          "status": "pass",
+          "seconds": 0.012
+        }
+      ],
+      "status": "pass",
+      "milestone": "M2",
+      "planned_cases": 24,
+      "requirements": [
+        "RD-007",
+        "RD-008",
+        "RD-013"
+      ],
+      "concurrency_policy": "whole-snapshot replacement; last successful database commit wins; overlapping responses do not define commit order",
+      "limits": {
+        "peers": 1000,
+        "tags": 1000,
+        "http_body_bytes": 2097152
+      },
+      "observations": {
+        "local.invalid_snapshots_checked": 12,
+        "local.concurrency": {
+          "rounds": 3,
+          "atomic_reads": 6,
+          "result": "overlap final is one complete accepted snapshot; subsequent successful commit replaces it"
+        },
+        "oidc.invalid_snapshots_checked": 12,
+        "oidc.concurrency": {
+          "rounds": 3,
+          "atomic_reads": 5,
+          "result": "overlap final is one complete accepted snapshot; subsequent successful commit replaces it"
+        }
+      },
+      "api_binary_sha256": "6807fb4221c0cec5b14ef5a28941badf7fdaab835085cf613c9cca1763194c91",
+      "finished_at": "2026-10-31T01:24:28.280908+00:00"
+    },
+    {
+      "runner": "run_m2.py",
+      "source_report": "validation/.runtime/postgres_20261031012428_f5eee5e3/report.json",
+      "database": "postgres",
+      "namespace": "20261031012428_f5eee5e3",
+      "scope": "two independent HTTP protocol clients; isolated SQL and real Keycloak; no new official GUI two-client claim",
+      "cases": [
+        {
+          "case": "setup.isolated-database-cli-users-api",
+          "status": "pass",
+          "seconds": 1.984
+        },
+        {
+          "case": "local.two-independent-sessions-empty-book",
+          "status": "pass",
+          "seconds": 0.993
+        },
+        {
+          "case": "local.add-chinese-edit-tag-colors-delete-clear",
+          "status": "pass",
+          "seconds": 0.047
+        },
+        {
+          "case": "local.metadata-only-credential-exclusion",
+          "status": "pass",
+          "seconds": 0.021
+        },
+        {
+          "case": "local.ownership-forged-user-ids",
+          "status": "pass",
+          "seconds": 0.019
+        },
+        {
+          "case": "local.invalid-json-shape-fields-atomic-rejection",
+          "status": "pass",
+          "seconds": 0.079
+        },
+        {
+          "case": "local.capacity-1000-accepted-1001-rejected",
+          "status": "pass",
+          "seconds": 0.055
+        },
+        {
+          "case": "local.body-over-2mib-rejected",
+          "status": "pass",
+          "seconds": 0.024
+        },
+        {
+          "case": "local.concurrent-whole-snapshots-atomic-last-commit",
+          "status": "pass",
+          "seconds": 0.259
+        },
+        {
+          "case": "local.restart-session-and-book-persistence",
+          "status": "pass",
+          "seconds": 0.311
+        },
+        {
+          "case": "local.real-child-offline-unsent-write-not-persisted",
+          "status": "pass",
+          "seconds": 0.325
+        },
+        {
+          "case": "local.revoked-session-read-write-401",
+          "status": "pass",
+          "seconds": 0.025
+        },
+        {
+          "case": "oidc.two-independent-sessions-empty-book",
+          "status": "pass",
+          "seconds": 0.636
+        },
+        {
+          "case": "oidc.add-chinese-edit-tag-colors-delete-clear",
+          "status": "pass",
+          "seconds": 0.049
+        },
+        {
+          "case": "oidc.metadata-only-credential-exclusion",
+          "status": "pass",
+          "seconds": 0.018
+        },
+        {
+          "case": "oidc.ownership-forged-user-ids",
+          "status": "pass",
+          "seconds": 0.019
+        },
+        {
+          "case": "oidc.invalid-json-shape-fields-atomic-rejection",
+          "status": "pass",
+          "seconds": 0.088
+        },
+        {
+          "case": "oidc.capacity-1000-accepted-1001-rejected",
+          "status": "pass",
+          "seconds": 0.059
+        },
+        {
+          "case": "oidc.body-over-2mib-rejected",
+          "status": "pass",
+          "seconds": 0.019
+        },
+        {
+          "case": "oidc.concurrent-whole-snapshots-atomic-last-commit",
+          "status": "pass",
+          "seconds": 0.292
+        },
+        {
+          "case": "oidc.restart-session-and-book-persistence",
+          "status": "pass",
+          "seconds": 0.302
+        },
+        {
+          "case": "oidc.real-child-offline-unsent-write-not-persisted",
+          "status": "pass",
+          "seconds": 0.321
+        },
+        {
+          "case": "oidc.revoked-session-read-write-401",
+          "status": "pass",
+          "seconds": 0.021
+        },
+        {
+          "case": "capabilities.legacy-and-empty-team-routes",
+          "status": "pass",
+          "seconds": 0.013
+        }
+      ],
+      "status": "pass",
+      "milestone": "M2",
+      "planned_cases": 24,
+      "requirements": [
+        "RD-007",
+        "RD-008",
+        "RD-013"
+      ],
+      "concurrency_policy": "whole-snapshot replacement; last successful database commit wins; overlapping responses do not define commit order",
+      "limits": {
+        "peers": 1000,
+        "tags": 1000,
+        "http_body_bytes": 2097152
+      },
+      "observations": {
+        "local.invalid_snapshots_checked": 12,
+        "local.concurrency": {
+          "rounds": 3,
+          "atomic_reads": 5,
+          "result": "overlap final is one complete accepted snapshot; subsequent successful commit replaces it"
+        },
+        "oidc.invalid_snapshots_checked": 12,
+        "oidc.concurrency": {
+          "rounds": 3,
+          "atomic_reads": 5,
+          "result": "overlap final is one complete accepted snapshot; subsequent successful commit replaces it"
+        }
+      },
+      "api_binary_sha256": "6807fb4221c0cec5b14ef5a28941badf7fdaab835085cf613c9cca1763194c91",
+      "postgres_server_version": "16.15",
+      "finished_at": "2026-10-31T01:24:34.392858+00:00"
+    },
+    {
+      "runner": "run_audit.py",
+      "source_report": "validation/.runtime/sqlite_20261031012434_faeea63e/report.json",
+      "database": "sqlite",
+      "namespace": "20261031012434_faeea63e",
+      "scope": "real HTTP local/Web/client events and real Keycloak code+PKCE; isolated SQL; protocol simulation",
+      "cases": [
+        {
+          "case": "setup.isolated-database-cli-users-api",
+          "status": "pass",
+          "seconds": 3.146
+        },
+        {
+          "case": "audit.access-schema-member-client-denied",
+          "status": "pass",
+          "seconds": 0.628
+        },
+        {
+          "case": "audit.local-client-web-login-success-failure",
+          "status": "pass",
+          "seconds": 1.229
+        },
+        {
+          "case": "audit.local-client-web-logout",
+          "status": "pass",
+          "seconds": 0.015
+        },
+        {
+          "case": "audit.admin-create-role-transitions",
+          "status": "pass",
+          "seconds": 0.312
+        },
+        {
+          "case": "audit.admin-disable-enable-reset",
+          "status": "pass",
+          "seconds": 0.95
+        },
+        {
+          "case": "audit.self-password-change",
+          "status": "pass",
+          "seconds": 0.898
+        },
+        {
+          "case": "audit.selected-and-all-session-revocation",
+          "status": "pass",
+          "seconds": 0.619
+        },
+        {
+          "case": "audit.oidc-real-jit-repeat-mapping",
+          "status": "pass",
+          "seconds": 0.391
+        },
+        {
+          "case": "audit.oidc-unmatched-admission-denial",
+          "status": "pass",
+          "seconds": 0.142
+        },
+        {
+          "case": "audit.oidc-invalid-state-and-exchange",
+          "status": "pass",
+          "seconds": 0.058
+        },
+        {
+          "case": "audit.policy-restart-and-oidc-role-remapping",
+          "status": "pass",
+          "seconds": 0.819
+        },
+        {
+          "case": "audit.filters-keyset-pagination-boundaries",
+          "status": "pass",
+          "seconds": 0.049
+        },
+        {
+          "case": "audit.persisted-events-and-secret-exclusion",
+          "status": "pass",
+          "seconds": 0.304
+        }
+      ],
+      "status": "pass",
+      "milestone": "audit",
+      "planned_cases": 14,
+      "web_session_ttl_seconds": 28800,
+      "observations": {
+        "post_setup_event_watermark": 12,
+        "failed_oidc_polling": {
+          "callback_failure_events": 1,
+          "polls_including_replay": 2,
+          "additional_failure_events": 0
+        },
+        "keyset_pagination": {
+          "page_limit": 2,
+          "events": 54,
+          "duplicates": 0
+        },
+        "persisted_events": 54,
+        "secret_exclusion": "every successful audit response scanned against known fixture credentials, sessions and OIDC URL/code material"
+      },
+      "test_login_limit_override": {
+        "per_account": 100,
+        "reason": "functional suite reuses fixture identities; limiter is verified separately by operations tests"
+      },
+      "api_binary_sha256": "6807fb4221c0cec5b14ef5a28941badf7fdaab835085cf613c9cca1763194c91",
+      "finished_at": "2026-10-31T01:24:44.081202+00:00"
+    },
+    {
+      "runner": "run_audit.py",
+      "source_report": "validation/.runtime/postgres_20261031012444_5e849412/report.json",
+      "database": "postgres",
+      "namespace": "20261031012444_5e849412",
+      "scope": "real HTTP local/Web/client events and real Keycloak code+PKCE; isolated SQL; protocol simulation",
+      "cases": [
+        {
+          "case": "setup.isolated-database-cli-users-api",
+          "status": "pass",
+          "seconds": 3.917
+        },
+        {
+          "case": "audit.access-schema-member-client-denied",
+          "status": "pass",
+          "seconds": 0.642
+        },
+        {
+          "case": "audit.local-client-web-login-success-failure",
+          "status": "pass",
+          "seconds": 1.282
+        },
+        {
+          "case": "audit.local-client-web-logout",
+          "status": "pass",
+          "seconds": 0.039
+        },
+        {
+          "case": "audit.admin-create-role-transitions",
+          "status": "pass",
+          "seconds": 0.353
+        },
+        {
+          "case": "audit.admin-disable-enable-reset",
+          "status": "pass",
+          "seconds": 0.988
+        },
+        {
+          "case": "audit.self-password-change",
+          "status": "pass",
+          "seconds": 0.922
+        },
+        {
+          "case": "audit.selected-and-all-session-revocation",
+          "status": "pass",
+          "seconds": 0.653
+        },
+        {
+          "case": "audit.oidc-real-jit-repeat-mapping",
+          "status": "pass",
+          "seconds": 0.42
+        },
+        {
+          "case": "audit.oidc-unmatched-admission-denial",
+          "status": "pass",
+          "seconds": 0.106
+        },
+        {
+          "case": "audit.oidc-invalid-state-and-exchange",
+          "status": "pass",
+          "seconds": 0.089
+        },
+        {
+          "case": "audit.policy-restart-and-oidc-role-remapping",
+          "status": "pass",
+          "seconds": 0.892
+        },
+        {
+          "case": "audit.filters-keyset-pagination-boundaries",
+          "status": "pass",
+          "seconds": 0.189
+        },
+        {
+          "case": "audit.persisted-events-and-secret-exclusion",
+          "status": "pass",
+          "seconds": 0.315
+        }
+      ],
+      "status": "pass",
+      "milestone": "audit",
+      "planned_cases": 14,
+      "web_session_ttl_seconds": 28800,
+      "observations": {
+        "post_setup_event_watermark": 13,
+        "failed_oidc_polling": {
+          "callback_failure_events": 1,
+          "polls_including_replay": 2,
+          "additional_failure_events": 0
+        },
+        "keyset_pagination": {
+          "page_limit": 2,
+          "events": 54,
+          "duplicates": 0
+        },
+        "persisted_events": 54,
+        "secret_exclusion": "every successful audit response scanned against known fixture credentials, sessions and OIDC URL/code material"
+      },
+      "test_login_limit_override": {
+        "per_account": 100,
+        "reason": "functional suite reuses fixture identities; limiter is verified separately by operations tests"
+      },
+      "api_binary_sha256": "6807fb4221c0cec5b14ef5a28941badf7fdaab835085cf613c9cca1763194c91",
+      "postgres_server_version": "16.15",
+      "finished_at": "2026-10-31T01:24:55.015164+00:00"
+    },
+    {
+      "runner": "run_m1.py",
+      "source_report": "validation/.runtime/sqlite_20261031012455_8dda0fb2/report.json",
+      "database": "sqlite",
+      "namespace": "20261031012455_8dda0fb2",
+      "scope": "real loopback HTTP Web management and Keycloak forms/cookies; run M0 independently",
+      "cases": [
+        {
+          "case": "setup.isolated-database-cli-users-api",
+          "status": "pass",
+          "seconds": 3.129
+        },
+        {
+          "case": "web.options-local-login-cookie-me",
+          "status": "pass",
+          "seconds": 0.312
+        },
+        {
+          "case": "web.login-origin-json-wrong-password",
+          "status": "pass",
+          "seconds": 0.348
+        },
+        {
+          "case": "web.client-session-purpose-isolation",
+          "status": "pass",
+          "seconds": 0.337
+        },
+        {
+          "case": "users.create-list-conflict-input-boundaries",
+          "status": "pass",
+          "seconds": 1.504
+        },
+        {
+          "case": "users.member-admin-routes-forbidden",
+          "status": "pass",
+          "seconds": 0.005
+        },
+        {
+          "case": "web.all-mutations-origin-csrf",
+          "status": "pass",
+          "seconds": 0.033
+        },
+        {
+          "case": "users.local-role-promotion-demotion",
+          "status": "pass",
+          "seconds": 0.313
+        },
+        {
+          "case": "users.local-disable-enable-revokes-all-kinds",
+          "status": "pass",
+          "seconds": 1.256
+        },
+        {
+          "case": "users.local-admin-password-reset",
+          "status": "pass",
+          "seconds": 1.535
+        },
+        {
+          "case": "users.local-self-password-change",
+          "status": "pass",
+          "seconds": 2.427
+        },
+        {
+          "case": "sessions.shape-scope-selected-and-admin-revocation",
+          "status": "pass",
+          "seconds": 0.93
+        },
+        {
+          "case": "sessions.self-all-revocation",
+          "status": "pass",
+          "seconds": 0.919
+        },
+        {
+          "case": "oidc.web-real-browser-pkce-cookie-callback-replay",
+          "status": "pass",
+          "seconds": 0.089
+        },
+        {
+          "case": "oidc.web-missing-wrong-browser-binding",
+          "status": "pass",
+          "seconds": 0.107
+        },
+        {
+          "case": "oidc.web-client-attempt-purpose-isolation",
+          "status": "pass",
+          "seconds": 0.2
+        },
+        {
+          "case": "oidc.provider-managed-role-password-conflicts",
+          "status": "pass",
+          "seconds": 0.301
+        },
+        {
+          "case": "oidc.disable-enable-requires-fresh-admission",
+          "status": "pass",
+          "seconds": 0.171
+        },
+        {
+          "case": "users.missing-targets",
+          "status": "pass",
+          "seconds": 0.301
+        },
+        {
+          "case": "web.logout-cookie-revocation",
+          "status": "pass",
+          "seconds": 0.627
+        }
+      ],
+      "status": "pass",
+      "milestone": "M1",
+      "planned_cases": 20,
+      "web_session_ttl_seconds": 28800,
+      "test_login_limit_override": {
+        "per_account": 100,
+        "reason": "functional suite reuses fixture identities; limiter is verified separately by operations tests"
+      },
+      "api_binary_sha256": "6807fb4221c0cec5b14ef5a28941badf7fdaab835085cf613c9cca1763194c91",
+      "finished_at": "2026-10-31T01:25:10.016717+00:00"
+    },
+    {
+      "runner": "run_m1.py",
+      "source_report": "validation/.runtime/postgres_20261031012510_8a3d3557/report.json",
+      "database": "postgres",
+      "namespace": "20261031012510_8a3d3557",
+      "scope": "real loopback HTTP Web management and Keycloak forms/cookies; run M0 independently",
+      "cases": [
+        {
+          "case": "setup.isolated-database-cli-users-api",
+          "status": "pass",
+          "seconds": 4.016
+        },
+        {
+          "case": "web.options-local-login-cookie-me",
+          "status": "pass",
+          "seconds": 0.316
+        },
+        {
+          "case": "web.login-origin-json-wrong-password",
+          "status": "pass",
+          "seconds": 0.36
+        },
+        {
+          "case": "web.client-session-purpose-isolation",
+          "status": "pass",
+          "seconds": 0.35
+        },
+        {
+          "case": "users.create-list-conflict-input-boundaries",
+          "status": "pass",
+          "seconds": 1.542
+        },
+        {
+          "case": "users.member-admin-routes-forbidden",
+          "status": "pass",
+          "seconds": 0.008
+        },
+        {
+          "case": "web.all-mutations-origin-csrf",
+          "status": "pass",
+          "seconds": 0.052
+        },
+        {
+          "case": "users.local-role-promotion-demotion",
+          "status": "pass",
+          "seconds": 0.335
+        },
+        {
+          "case": "users.local-disable-enable-revokes-all-kinds",
+          "status": "pass",
+          "seconds": 1.505
+        },
+        {
+          "case": "users.local-admin-password-reset",
+          "status": "pass",
+          "seconds": 1.561
+        },
+        {
+          "case": "users.local-self-password-change",
+          "status": "pass",
+          "seconds": 2.511
+        },
+        {
+          "case": "sessions.shape-scope-selected-and-admin-revocation",
+          "status": "pass",
+          "seconds": 0.999
+        },
+        {
+          "case": "sessions.self-all-revocation",
+          "status": "pass",
+          "seconds": 0.954
+        },
+        {
+          "case": "oidc.web-real-browser-pkce-cookie-callback-replay",
+          "status": "pass",
+          "seconds": 0.136
+        },
+        {
+          "case": "oidc.web-missing-wrong-browser-binding",
+          "status": "pass",
+          "seconds": 0.119
+        },
+        {
+          "case": "oidc.web-client-attempt-purpose-isolation",
+          "status": "pass",
+          "seconds": 0.204
+        },
+        {
+          "case": "oidc.provider-managed-role-password-conflicts",
+          "status": "pass",
+          "seconds": 0.305
+        },
+        {
+          "case": "oidc.disable-enable-requires-fresh-admission",
+          "status": "pass",
+          "seconds": 0.207
+        },
+        {
+          "case": "users.missing-targets",
+          "status": "pass",
+          "seconds": 0.313
+        },
+        {
+          "case": "web.logout-cookie-revocation",
+          "status": "pass",
+          "seconds": 0.649
+        }
+      ],
+      "status": "pass",
+      "milestone": "M1",
+      "planned_cases": 20,
+      "web_session_ttl_seconds": 28800,
+      "test_login_limit_override": {
+        "per_account": 100,
+        "reason": "functional suite reuses fixture identities; limiter is verified separately by operations tests"
+      },
+      "api_binary_sha256": "6807fb4221c0cec5b14ef5a28941badf7fdaab835085cf613c9cca1763194c91",
+      "postgres_server_version": "16.15",
+      "finished_at": "2026-10-31T01:25:26.612457+00:00"
+    },
+    {
+      "runner": "run_m0.py",
+      "source_report": "validation/.runtime/sqlite_20261031012526_c60648ed/report.json",
+      "database": "sqlite",
+      "namespace": "20261031012526_c60648ed",
+      "scope": "real Keycloak authorization-code + PKCE via HTTP forms/cookies; no official client GUI",
+      "cases": [
+        {
+          "case": "setup.isolated-database-cli-users-api",
+          "status": "pass",
+          "seconds": 0.978
+        },
+        {
+          "case": "local.wrong-password",
+          "status": "pass",
+          "seconds": 0.347
+        },
+        {
+          "case": "local.correct-password-two-devices",
+          "status": "pass",
+          "seconds": 0.968
+        },
+        {
+          "case": "local.book-sync-isolation-metadata-invalid-snapshot",
+          "status": "pass",
+          "seconds": 0.062
+        },
+        {
+          "case": "local.logout-all-protected-routes-401",
+          "status": "pass",
+          "seconds": 0.07
+        },
+        {
+          "case": "oidc.options",
+          "status": "pass",
+          "seconds": 0.007
+        },
+        {
+          "case": "oidc.code-pkce-pendingexact-wrongbinding-invalidstate",
+          "status": "pass",
+          "seconds": 0.056
+        },
+        {
+          "case": "oidc.member-real-browser-jit-repeat-single-use",
+          "status": "pass",
+          "seconds": 0.227
+        },
+        {
+          "case": "oidc.book-sync-isolation-metadata-invalid-snapshot",
+          "status": "pass",
+          "seconds": 0.061
+        },
+        {
+          "case": "oidc.logout-all-protected-routes-401",
+          "status": "pass",
+          "seconds": 0.062
+        },
+        {
+          "case": "oidc.admin-wins-both-groups",
+          "status": "pass",
+          "seconds": 0.117
+        },
+        {
+          "case": "oidc.unmatched-default-deny",
+          "status": "pass",
+          "seconds": 0.092
+        },
+        {
+          "case": "oidc.configurable-member-fallback-policy-revocation",
+          "status": "pass",
+          "seconds": 0.39
+        },
+        {
+          "case": "oidc.bad-exchange-never-member-fallback",
+          "status": "pass",
+          "seconds": 0.06
+        },
+        {
+          "case": "oidc.restore-deny-removes-existing-admission",
+          "status": "pass",
+          "seconds": 0.393
+        }
+      ],
+      "status": "pass",
+      "api_binary_sha256": "6807fb4221c0cec5b14ef5a28941badf7fdaab835085cf613c9cca1763194c91",
+      "finished_at": "2026-10-31T01:25:30.643505+00:00"
+    },
+    {
+      "runner": "run_m0.py",
+      "source_report": "validation/.runtime/postgres_20261031012530_6b470c62/report.json",
+      "database": "postgres",
+      "namespace": "20261031012530_6b470c62",
+      "scope": "real Keycloak authorization-code + PKCE via HTTP forms/cookies; no official client GUI",
+      "cases": [
+        {
+          "case": "setup.isolated-database-cli-users-api",
+          "status": "pass",
+          "seconds": 1.322
+        },
+        {
+          "case": "local.wrong-password",
+          "status": "pass",
+          "seconds": 0.316
+        },
+        {
+          "case": "local.correct-password-two-devices",
+          "status": "pass",
+          "seconds": 0.946
+        },
+        {
+          "case": "local.book-sync-isolation-metadata-invalid-snapshot",
+          "status": "pass",
+          "seconds": 0.089
+        },
+        {
+          "case": "local.logout-all-protected-routes-401",
+          "status": "pass",
+          "seconds": 0.073
+        },
+        {
+          "case": "oidc.options",
+          "status": "pass",
+          "seconds": 0.007
+        },
+        {
+          "case": "oidc.code-pkce-pendingexact-wrongbinding-invalidstate",
+          "status": "pass",
+          "seconds": 0.058
+        },
+        {
+          "case": "oidc.member-real-browser-jit-repeat-single-use",
+          "status": "pass",
+          "seconds": 0.237
+        },
+        {
+          "case": "oidc.book-sync-isolation-metadata-invalid-snapshot",
+          "status": "pass",
+          "seconds": 0.09
+        },
+        {
+          "case": "oidc.logout-all-protected-routes-401",
+          "status": "pass",
+          "seconds": 0.07
+        },
+        {
+          "case": "oidc.admin-wins-both-groups",
+          "status": "pass",
+          "seconds": 0.113
+        },
+        {
+          "case": "oidc.unmatched-default-deny",
+          "status": "pass",
+          "seconds": 0.083
+        },
+        {
+          "case": "oidc.configurable-member-fallback-policy-revocation",
+          "status": "pass",
+          "seconds": 0.43
+        },
+        {
+          "case": "oidc.bad-exchange-never-member-fallback",
+          "status": "pass",
+          "seconds": 0.061
+        },
+        {
+          "case": "oidc.restore-deny-removes-existing-admission",
+          "status": "pass",
+          "seconds": 0.38
+        }
+      ],
+      "status": "pass",
+      "api_binary_sha256": "6807fb4221c0cec5b14ef5a28941badf7fdaab835085cf613c9cca1763194c91",
+      "postgres_server_version": "16.15",
+      "finished_at": "2026-10-31T01:25:35.017106+00:00"
+    }
+  ],
+  "operations_runs": [
+    {
+      "source_report": "validation/.runtime/rdm3-8cf2e332b100/report.json",
+      "milestone": "M3",
+      "backend": "sqlite",
+      "project": "rdm3-8cf2e332b100",
+      "mode": "runtime",
+      "cases": [
+        {
+          "name": "compose-config",
+          "passed": true
+        },
+        {
+          "name": "https-ca-ready-web-nonroot-readonly-private-api",
+          "passed": true
+        },
+        {
+          "name": "secure-cookie-sigterm-restart-session-persistence",
+          "passed": true
+        },
+        {
+          "name": "account-limiter-proxy-header-resistance-and-window-recovery",
+          "passed": true
+        },
+        {
+          "name": "readiness-fault-and-recovery",
+          "passed": true
+        },
+        {
+          "name": "backup-restore-session-book-audit-snapshot-rollback-overwrite-refusal-redacted-logs",
+          "passed": true
+        }
+      ],
+      "data_retained": true,
+      "oidc_scope": "not exercised; run M0/M1/M2 separately",
+      "images": {
+        "rustdesk-account-api:0.1.0-m3": {
+          "id": "sha256:c8f6f5f5622235aca6db75417a9ddbb438aae483f20f7f110f81e1ca66a3d0d2",
+          "repo_digests": []
+        },
+        "caddy:2-alpine": {
+          "id": "sha256:6b08c1b9858ca9a7d99c1da13c3695081e0e604c6cf214ca26a7ce0e2c4fd9b4",
+          "repo_digests": [
+            "docker.m.daocloud.io/library/caddy@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648"
+          ]
+        }
+      },
+      "restore_snapshot": {
+        "audit_event_ids": [
+          12,
+          11,
+          10,
+          9,
+          8,
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1
+        ],
+        "audit_events_equal": true,
+        "address_book_equal": true,
+        "post_backup_changes_removed": true
+      },
+      "passed": true,
+      "containers": [
+        {
+          "service": "api",
+          "stopped": true,
+          "exit_code": 0
+        },
+        {
+          "service": "caddy",
+          "stopped": true,
+          "exit_code": 0
+        }
+      ]
+    },
+    {
+      "source_report": "validation/.runtime/rdm3-30033d3f8453/report.json",
+      "milestone": "M3",
+      "backend": "postgres",
+      "project": "rdm3-30033d3f8453",
+      "mode": "runtime",
+      "cases": [
+        {
+          "name": "compose-config",
+          "passed": true
+        },
+        {
+          "name": "postgres-app-role-no-elevation-database-table-ownership-ddl",
+          "passed": true
+        },
+        {
+          "name": "https-ca-ready-web-nonroot-readonly-private-api",
+          "passed": true
+        },
+        {
+          "name": "secure-cookie-sigterm-restart-session-persistence",
+          "passed": true
+        },
+        {
+          "name": "account-limiter-proxy-header-resistance-and-window-recovery",
+          "passed": true
+        },
+        {
+          "name": "readiness-fault-and-recovery",
+          "passed": true
+        },
+        {
+          "name": "backup-restore-session-book-audit-snapshot-rollback-overwrite-refusal-redacted-logs",
+          "passed": true
+        }
+      ],
+      "data_retained": true,
+      "oidc_scope": "not exercised; run M0/M1/M2 separately",
+      "images": {
+        "rustdesk-account-api:0.1.0-m3": {
+          "id": "sha256:c8f6f5f5622235aca6db75417a9ddbb438aae483f20f7f110f81e1ca66a3d0d2",
+          "repo_digests": []
+        },
+        "caddy:2-alpine": {
+          "id": "sha256:6b08c1b9858ca9a7d99c1da13c3695081e0e604c6cf214ca26a7ce0e2c4fd9b4",
+          "repo_digests": [
+            "docker.m.daocloud.io/library/caddy@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648"
+          ]
+        },
+        "postgres:16-alpine": {
+          "id": "sha256:c05eced0bdb41ea9b95a656472a6aa4d50cad0d8a2e33d14eb1c53fd6204f2ae",
+          "repo_digests": [
+            "postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685"
+          ]
+        }
+      },
+      "restored_application_role_ownership_verified": true,
+      "restore_snapshot": {
+        "audit_event_ids": [
+          18,
+          17,
+          16,
+          15,
+          14,
+          13,
+          12,
+          11,
+          7,
+          6,
+          2,
+          1
+        ],
+        "audit_events_equal": true,
+        "address_book_equal": true,
+        "post_backup_changes_removed": true
+      },
+      "passed": true,
+      "containers": [
+        {
+          "service": "api",
+          "stopped": true,
+          "exit_code": 0
+        },
+        {
+          "service": "caddy",
+          "stopped": true,
+          "exit_code": 0
+        },
+        {
+          "service": "postgres",
+          "stopped": true,
+          "exit_code": 0
+        }
+      ]
+    }
+  ],
+  "browser": {
+    "date": "2026-10-31",
+    "milestone": "M23",
+    "namespace": "20261031011719_815ec621",
+    "api_binary_sha256": "87a4958e11ff52752e7ececf633036ee0cc94cbe1869a8ee09f0888890a5bd0a",
+    "cases": [
+      {
+        "case": "admin-login-audit-entry",
+        "status": "pass"
+      },
+      {
+        "case": "audit-first-page-50",
+        "status": "pass"
+      },
+      {
+        "case": "audit-load-more-65-no-more",
+        "status": "pass"
+      },
+      {
+        "case": "target-filter-two-matching-events",
+        "status": "pass"
+      },
+      {
+        "case": "member-no-audit-entry",
+        "status": "pass"
+      },
+      {
+        "case": "logout-both-web-sessions",
+        "status": "pass"
+      }
+    ],
+    "browser": "CUA ChatGPT in-app browser",
+    "screenshot": "validation/results/m23-audit-2026-10-31.png",
+    "fixture_sessions": [
+      {
+        "kind": "web",
+        "revoked": true,
+        "count": 2
+      }
+    ],
+    "active_sessions_after_logout": 0,
+    "scope": "actual browser audit UI checks; no new official RustDesk GUI claim"
+  },
+  "browser_build_note": "浏览器独立报告绑定较早构建87a4958...及同一Web产物；随后仅修正CLI数据库配置优先级，最终构建重新通过146 HTTP、6 CLI和13运维检查",
+  "excluded_attempts": [
+    {
+      "report": "validation/.runtime/sqlite_20261031011435_1dedaced/report.json",
+      "status": "fail",
+      "reason": "Shared Web/client login limiter exhausted by fixture reuse; functional suite now explicitly configures per-account=100; default limiter checked independently"
+    }
+  ],
+  "cleanup": {
+    "test_dependencies_stopped": true,
+    "browser_fixture_stopped": true,
+    "browser_active_sessions": 0,
+    "operations_containers_stopped": true,
+    "data_and_volumes_retained": true,
+    "user_rustdesk_configuration": "unchanged this round"
+  },
+  "limitations": [
+    "No actual production server/domain/ACME validation",
+    "No new official GUI two-client or other-OS claim",
+    "Historical Linux old image startup rollback not exercised; forward migrations and snapshot rollback verified",
+    "No capacity SLA/load test; 1000-entry functional boundary verified",
+    "Production IdP and publication/license remain independent decisions"
+  ]
+}

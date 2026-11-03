@@ -1,0 +1,76 @@
+{
+  "retrieved_on": "2026-10-30",
+  "purpose": "Source snapshots for requirements and compatibility research; no adoption or runtime compatibility claim.",
+  "repositories": [
+    {
+      "role": "official_client",
+      "path": "upstream/rustdesk",
+      "url": "https://github.com/rustdesk/rustdesk.git",
+      "commit": "33a154a5d7502419381dc601aff1e4b0c660054d",
+      "branch": "master",
+      "commit_date": "2026-10-30",
+      "license": "AGPL-3.0",
+      "license_file": "LICENCE",
+      "shallow": true,
+      "local_changes": "",
+      "submodules": [
+        {
+          "path": "libs/hbb_common",
+          "commit": "fae47e024dd83cef6aaecde0aa7d11731df11649",
+          "initialized": true
+        }
+      ]
+    },
+    {
+      "role": "official_server",
+      "path": "upstream/rustdesk-server",
+      "url": "https://github.com/rustdesk/rustdesk-server.git",
+      "commit": "873230e35a8805de7fd057e7eb763c46f7a174ef",
+      "branch": "master",
+      "commit_date": "2026-10-10",
+      "license": "AGPL-3.0",
+      "license_file": "LICENSE",
+      "shallow": true,
+      "local_changes": "",
+      "submodules": [
+        {
+          "path": "libs/hbb_common",
+          "commit": "69cea8dafee147848ae88702029f4bf7df7224c3",
+          "initialized": true
+        }
+      ]
+    },
+    {
+      "role": "reference_api",
+      "path": "references/rustdesk-api",
+      "url": "https://github.com/lejianwen/rustdesk-api.git",
+      "commit": "c5687e150615bfb00d9d105f0883a2802750a8ad",
+      "branch": "master",
+      "commit_date": "2025-09-29",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "shallow": true,
+      "local_changes": "",
+      "submodules": []
+    },
+    {
+      "role": "reference_admin",
+      "path": "references/rustdesk-api-web",
+      "url": "https://github.com/lejianwen/rustdesk-api-web.git",
+      "commit": "3998c2a9213fcd047252776d0f0db33e6717026c",
+      "branch": "master",
+      "commit_date": "2025-08-31",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "shallow": true,
+      "local_changes": "",
+      "submodules": []
+    }
+  ],
+  "compatibility_research": {
+    "client_release": "1.5.0",
+    "client_release_commit": "fada664df7a294d1d1a9ca3e7cd3637069122f17",
+    "release_url": "https://github.com/rustdesk/rustdesk/releases/tag/1.5.0",
+    "scope": "Targeted source comparison for account/address-book paths; no binary or runtime verification."
+  }
+}

@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "validation_date": "2026-10-31",
+  "timezone": "Asia/Shanghai",
+  "status": "pass",
+  "method": "User operates official RustDesk macOS client; Codex checks redacted read-only server evidence",
+  "client_version": "1.5.0",
+  "api_binary_sha256": "62c6ff997d68cc59cd598473e5bf18e610c5160e71791cf1dd41b7048f3cc4bb",
+  "run_namespace": "20261030174706_56476bdf",
+  "cases": [
+    {
+      "case": "client.local-login",
+      "status": "pass",
+      "human_confirmation": "User reported local login succeeded",
+      "server_confirmation": "A newly issued, active local account session is present; initial baseline had zero sessions",
+      "observed_at": "2026-10-30T17:59:01.616024+00:00"
+    },
+    {
+      "case": "client.personal-book-write-read",
+      "status": "pass",
+      "observed_at": "2026-10-30T18:03:27.218718+00:00",
+      "human_confirmation": "User saved the local test peer and confirmed it remained visible after logout and login",
+      "server_confirmation": "The expected local test alias is persisted with no credential fields"
+    },
+    {
+      "case": "client.logout-revocation",
+      "status": "pass",
+      "observed_at": "2026-10-30T18:03:27.218718+00:00",
+      "human_confirmation": "User logged out and logged back in, then logged out to start OIDC",
+      "server_confirmation": "Two local sessions issued and revoked; personal book retained",
+      "limit": "Original GUI bearer was not captured; replay rejection and restart durability separately covered by automated tests"
+    },
+    {
+      "case": "client.oidc",
+      "status": "pass",
+      "observed_at": "2026-10-30T18:03:27.218718+00:00",
+      "human_confirmation": "User completed company/Keycloak browser login and confirmed empty personal book in official RustDesk",
+      "server_confirmation": "One newly created issuer+sub OIDC identity with member role, active application session and independent empty book"
+    },
+    {
+      "case": "client.restore-original-api",
+      "status": "pass",
+      "observed_at": "2026-10-30T18:06:49.343078+00:00",
+      "human_confirmation": "User confirmed test account logout and original API Server address restored",
+      "verification_method": "User confirmation; native UI automation unavailable, original address not collected"
+    },
+    {
+      "case": "client.oidc-book-write-read",
+      "status": "pass",
+      "observed_at": "2026-10-30T18:06:49.343078+00:00",
+      "human_confirmation": "User saved the OIDC test peer and confirmed it remained visible after company login again",
+      "server_confirmation": "Expected OIDC alias persisted without credentials; second OIDC login reuses the same local user ID"
+    },
+    {
+      "case": "client.oidc-logout-revocation",
+      "status": "pass",
+      "observed_at": "2026-10-30T18:06:49.343078+00:00",
+      "human_confirmation": "User logged out after OIDC readback",
+      "server_confirmation": "Both OIDC application sessions revoked; no active sessions remain across all test accounts"
+    }
+  ],
+  "observations": [
+    {
+      "phase": "after-local-login",
+      "evidence": {
+        "observed_at": "2026-10-30T17:59:01.616024+00:00",
+        "run_namespace": "20261030174706_56476bdf",
+        "api_url": "http://127.0.0.1:21114",
+        "accounts": [
+          {
+            "user_id": "331d5509-c5fa-48f5-9d16-11ad810a2f25",
+            "source": "local",
+            "role": "member",
+            "disabled": false,
+            "admitted": true,
+            "sessions_total": 0,
+            "sessions_active": 0,
+            "sessions_revoked": 0,
+            "peer_count": 0,
+            "marker_present": false,
+            "credential_fields_stored": false
+          },
+          {
+            "user_id": "6c3b1da5-fd9e-47e4-b2e0-6972c6f5fba2",
+            "source": "local",
+            "role": "member",
+            "disabled": false,
+            "admitted": true,
+            "sessions_total": 1,
+            "sessions_active": 1,
+            "sessions_revoked": 0,
+            "peer_count": 0,
+            "marker_present": false,
+            "credential_fields_stored": false
+          }
+        ]
+      }
+    },
+    {
+      "phase": "after-local-book-and-first-oidc-login",
+      "evidence": {
+        "observed_at": "2026-10-30T18:03:27.218718+00:00",
+        "run_namespace": "20261030174706_56476bdf",
+        "api_url": "http://127.0.0.1:21114",
+        "accounts": [
+          {
+            "user_id": "331d5509-c5fa-48f5-9d16-11ad810a2f25",
+            "source": "local",
+            "role": "member",
+            "disabled": false,
+            "admitted": true,
+            "sessions_total": 0,
+            "sessions_active": 0,
+            "sessions_revoked": 0,
+            "peer_count": 0,
+            "marker_present": false,
+            "credential_fields_stored": false
+          },
+          {
+            "user_id": "6c3b1da5-fd9e-47e4-b2e0-6972c6f5fba2",
+            "source": "local",
+            "role": "member",
+            "disabled": false,
+            "admitted": true,
+            "sessions_total": 2,
+            "sessions_active": 0,
+            "sessions_revoked": 2,
+            "peer_count": 1,
+            "marker_present": true,
+            "credential_fields_stored": false
+          },
+          {
+            "user_id": "0a2f10c2-f77a-46fb-b6ac-1f740d1cb5e3",
+            "source": "oidc",
+            "role": "member",
+            "disabled": false,
+            "admitted": true,
+            "sessions_total": 1,
+            "sessions_active": 1,
+            "sessions_revoked": 0,
+            "peer_count": 0,
+            "marker_present": false,
+            "credential_fields_stored": false
+          }
+        ]
+      }
+    },
+    {
+      "phase": "after-oidc-book-readback-final-logout-and-user-restoration",
+      "evidence": {
+        "observed_at": "2026-10-30T18:06:49.343078+00:00",
+        "run_namespace": "20261030174706_56476bdf",
+        "api_url": "http://127.0.0.1:21114",
+        "marker_alias": "M0-OIDC实测",
+        "accounts": [
+          {
+            "user_id": "331d5509-c5fa-48f5-9d16-11ad810a2f25",
+            "source": "local",
+            "role": "member",
+            "disabled": false,
+            "admitted": true,
+            "sessions_total": 0,
+            "sessions_active": 0,
+            "sessions_revoked": 0,
+            "peer_count": 0,
+            "marker_present": false,
+            "credential_fields_stored": false
+          },
+          {
+            "user_id": "6c3b1da5-fd9e-47e4-b2e0-6972c6f5fba2",
+            "source": "local",
+            "role": "member",
+            "disabled": false,
+            "admitted": true,
+            "sessions_total": 2,
+            "sessions_active": 0,
+            "sessions_revoked": 2,
+            "peer_count": 1,
+            "marker_present": false,
+            "credential_fields_stored": false
+          },
+          {
+            "user_id": "0a2f10c2-f77a-46fb-b6ac-1f740d1cb5e3",
+            "source": "oidc",
+            "role": "member",
+            "disabled": false,
+            "admitted": true,
+            "sessions_total": 2,
+            "sessions_active": 0,
+            "sessions_revoked": 2,
+            "peer_count": 1,
+            "marker_present": true,
+            "credential_fields_stored": false
+          }
+        ]
+      }
+    }
+  ],
+  "finished_at": "2026-10-30T18:06:49.343078+00:00",
+  "server_final_active_sessions": 0,
+  "limits": [
+    "Human-operated official client with server-side evidence; native GUI automation timed out",
+    "Original raw GUI bearer tokens not captured; replay rejection and restart durability proven by separate automated tests",
+    "Only this macOS 1.5.0 client validated; other platforms and production IdP remain unverified"
+  ],
+  "client": {
+    "platform": "macOS arm64",
+    "version": "1.5.0",
+    "build": "68",
+    "executable_sha256": "23ff6d26651b9981842f90f4be197029f49defb9038a0bef917019b31cebc886",
+    "bundle_signature": {
+      "verification": "codesign --verify --deep --strict: pass",
+      "signer": "Developer ID Application: zhou huabing (HZF9JMC8YN)",
+      "team_identifier": "HZF9JMC8YN"
+    },
+    "installer_download_source": "not separately collected"
+  },
+  "cleanup": {
+    "verified_at": "2026-10-30T18:11:21.486931+00:00",
+    "manual_launcher_state": "stopped",
+    "api": "stopped",
+    "compose_project": "rustdesk-m0",
+    "keycloak": "stopped",
+    "postgres": "stopped",
+    "loopback_ports": {
+      "21114": "closed",
+      "18080": "closed",
+      "15432": "closed"
+    },
+    "databases_fixtures_and_volumes": "preserved",
+    "original_client_api_setting": "restored; user confirmed; no automated UI readback"
+  }
+}

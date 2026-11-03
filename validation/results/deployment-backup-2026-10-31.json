@@ -1,0 +1,29 @@
+{
+  "timestamp": "20261031T034155Z",
+  "database": "rustdesk_accounts",
+  "status": "passed",
+  "checks": [
+    "stopped-api-custom-format-backup",
+    "archive-readable",
+    "restore-to-new-dedicated-database",
+    "all-six-tables-count-and-content-match",
+    "audit-sequence-state-match",
+    "restored-objects-use-dedicated-owner",
+    "own-temporary-restore-database-removed",
+    "api-restarted-healthy"
+  ],
+  "api_image_id": "sha256:1458fb963eaa91950c1da14ccaca011db22933ed0d5d069a5538bb5904596fd8",
+  "postgres_version": "16.10",
+  "schema_version": 3,
+  "archive_sha256": "4699ea0247d78bd3432edd9dc9902bb06f794350289be016dc940eedcee9ad5d",
+  "archive_bytes": 14368,
+  "table_rows": {
+    "account_schema_migrations": 3,
+    "users": 1,
+    "sessions": 3,
+    "books": 1,
+    "settings": 2,
+    "audit_events": 8
+  },
+  "backup_directory": "/home/migu/app/usr/rustdesk-accounts/backups/initial-20261031T034155Z"
+}

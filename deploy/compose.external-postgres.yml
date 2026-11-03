@@ -1,0 +1,73 @@
+# External PostgreSQL: provision the database separately; supply only database_url.
+services:
+  api:
+    image: ${RD_API_IMAGE:-rustdesk-account-api:0.1.0-devices}
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: ["serve"]
+    user: "10001:10001"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    stop_grace_period: 30s
+    environment:
+      RD_DATABASE_URL_FILE: /run/secrets/database_url
+      RD_LISTEN: 0.0.0.0:21114
+      RD_ALLOW_NON_LOOPBACK: "true"
+      RD_WEB_ORIGIN: ${RD_WEB_ORIGIN:?set full HTTPS origin}
+      RD_WEB_DIR: /app/web/dist
+      RD_AUDIT_RETENTION_DAYS: ${RD_AUDIT_RETENTION_DAYS:-90}
+      RD_LOGIN_WINDOW_SECONDS: ${RD_LOGIN_WINDOW_SECONDS:-60}
+      RD_LOGIN_PER_ACCOUNT: ${RD_LOGIN_PER_ACCOUNT:-10}
+      RD_LOGIN_GLOBAL: ${RD_LOGIN_GLOBAL:-300}
+      RD_LOGIN_MAX_KEYS: ${RD_LOGIN_MAX_KEYS:-1024}
+    secrets: [database_url]
+    volumes:
+      - data:/app/data
+    healthcheck:
+      test: [CMD, curl, --fail, --silent, --max-time, "3", http://127.0.0.1:21114/readyz]
+      interval: 10s
+      timeout: 4s
+      retries: 3
+      start_period: 30s
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+  caddy:
+    image: ${CADDY_IMAGE:-caddy:2-alpine}
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m,mode=1777
+      - /config:rw,noexec,nosuid,size=16m
+    ports:
+      - "${RD_HTTP_BIND:-80}:80"
+      - "${RD_HTTPS_BIND:-443}:443"
+    environment:
+      RD_DOMAIN: ${RD_DOMAIN:?set RD_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:-admin@example.invalid}
+      CADDY_TLS_DIRECTIVE: ${CADDY_TLS_DIRECTIVE:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      api:
+        condition: service_healthy
+    logging: *logging
+volumes:
+  data:
+    name: ${RD_DATA_VOLUME:?set unique RD_DATA_VOLUME}
+  caddy_data:
+    name: ${RD_CADDY_VOLUME:?set unique RD_CADDY_VOLUME}
+secrets:
+  database_url:
+    file: ${RD_SECRETS_DIR:-./.secrets}/database_url

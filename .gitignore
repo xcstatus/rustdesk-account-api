@@ -1,0 +1,27 @@
+# Downloaded upstream checkouts are restored from sources.lock.json.
+/upstream/
+/references/
+/fixes/
+/diagnostics/macos-command-click.zip
+
+.DS_Store
+.env
+.env.local
+/data/
+/backups/
+/api/target/
+/api/data/
+/validation/.runtime/
+/web/node_modules/
+/web/dist/
+
+# Private deployment material and generated local diagnostics.
+.secrets/
+__pycache__/
+*.py[cod]
+/diagnostics/macos-command-click/build/
+/diagnostics/macos-command-click/*.jsonl
+/diagnostics/macos-command-click/*.json
+
+# Raw GUI evidence remains local; publish sanitized JSON reports instead.
+/validation/results/*.png

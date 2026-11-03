@@ -1,0 +1,126 @@
+name: Dependency security
+
+on:
+  schedule:
+    # 09:17 Asia/Shanghai; GitHub schedules may be delayed.
+    - cron: '17 1 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'api/Cargo.toml'
+      - 'api/Cargo.lock'
+      - 'web/package.json'
+      - 'web/package-lock.json'
+      - '.github/dependabot.yml'
+      - '.github/workflows/security.yml'
+  pull_request:
+    paths:
+      - 'api/Cargo.toml'
+      - 'api/Cargo.lock'
+      - 'web/package.json'
+      - 'web/package-lock.json'
+      - '.github/dependabot.yml'
+      - '.github/workflows/security.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-security-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  rust:
+    name: RustSec audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install prebuilt cargo-audit
+        uses: taiki-e/install-action@682ce6c3c696a4cd5168a05f98e51aa02b877941 # v2.89.1
+        with:
+          tool: cargo-audit@0.22.2
+          checksum: true
+          fallback: none
+      - name: Audit locked Rust dependencies
+        run: cargo audit --file api/Cargo.lock --json > "${RUNNER_TEMP}/cargo-audit.json"
+      - name: Retain Rust audit report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: cargo-audit
+          path: ${{ runner.temp }}/cargo-audit.json
+          retention-days: 14
+          if-no-files-found: warn
+
+  npm:
+    name: npm audit / high + critical
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22.22.1'
+          package-manager-cache: false
+      - name: Audit locked npm dependencies including development tools
+        working-directory: web
+        run: npm audit --package-lock-only --ignore-scripts --include=dev --audit-level=high --json > "${RUNNER_TEMP}/npm-audit.json"
+      - name: Retain npm audit report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: npm-audit
+          path: ${{ runner.temp }}/npm-audit.json
+          retention-days: 14
+          if-no-files-found: warn
+
+  issue-report:
+    name: Maintain security automation issue
+    needs: [rust, npm]
+    if: ${{ always() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      # This job never checks out or executes repository code.
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          RUST_RESULT: ${{ needs.rust.result }}
+          NPM_RESULT: ${{ needs.npm.result }}
+        with:
+          script: |
+            const title = '[security-automation] Dependency audit needs attention';
+            const marker = '<!-- security-automation:dependency-audit -->';
+            const { owner, repo } = context.repo;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'all', creator: 'github-actions[bot]', per_page: 100
+            });
+            const issue = issues.find(item => !item.pull_request &&
+              item.title === title && item.body?.includes(marker));
+            const passed = process.env.RUST_RESULT === 'success' &&
+              process.env.NPM_RESULT === 'success';
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const body = [
+              marker,
+              passed ? 'Both dependency audit jobs passed.' :
+                'A dependency audit job did not pass. This may indicate a vulnerability or a scanner/infrastructure failure.',
+              'Review the workflow logs and JSON artifacts; verify findings before changing dependencies.',
+              `Workflow run: ${runUrl}`
+            ].join('\n\n');
+            if (issue) {
+              await github.rest.issues.update({
+                owner, repo, issue_number: issue.number, body,
+                state: passed ? 'closed' : 'open'
+              });
+            } else if (!passed) {
+              await github.rest.issues.create({
+                owner, repo, title, body, labels: ['security-automation']
+              });
+            }

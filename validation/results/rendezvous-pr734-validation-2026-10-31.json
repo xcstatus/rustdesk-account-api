@@ -1,0 +1,104 @@
+{
+  "recorded_at": "2026-10-31T16:32:56.189732+08:00",
+  "status": "deployed_client_verified",
+  "selection": "user selected upstream PR #734; no independent handshake patch",
+  "source": {
+    "pull_request": "https://github.com/rustdesk/rustdesk-server/pull/734",
+    "head": "ef2166f7760905a18b6588f0882d633d3688ad2f",
+    "base": "873230e35a8805de7fd057e7eb763c46f7a174ef",
+    "hbb_common": "229b904508364c8997aad0fb5af57effac859f60",
+    "cargo_lock_sha256": "bd6aa4e15ca07598c17bead7c80a0c1a1fb50a943dc617d7315e55b743378afe",
+    "pr_state_when_selected": "open_unmerged",
+    "source_modified": false,
+    "cargo_lock_unchanged": true
+  },
+  "validation_scope": "Linux/amd64 image build, upstream key_exchange + compat default tests, official client remote connection and remembered credential sync",
+  "flags": {
+    "SECURE_TCP": "Y",
+    "IPV6_PUNCH": "N",
+    "WEBRTC": "N",
+    "UDP_PUNCH": "N"
+  },
+  "linux_amd64": {
+    "status": "passed",
+    "image": "rustdesk-hbbs-pr734:ef2166f7-amd64",
+    "image_id": "sha256:f9d74b60499cd4f84c3a5ae8edef62aa15178c1140a85e4d38d2f68542a4bd25",
+    "binary_sha256": "903f0f9e154a536be9d320be1f553f65043cab7695a8c6ee873ef8bb0f70ef19",
+    "version": "1.1.17 (PR/master, not stable release)"
+  },
+  "upstream_tests": {
+    "key_exchange": {
+      "passed": 18,
+      "failed": 0
+    },
+    "compat": {
+      "passed": 0,
+      "failed": 0,
+      "ignored": 3,
+      "reason": "upstream comparisons require additional baseline binary; not run per selected limited scope"
+    }
+  },
+  "production_changed": true,
+  "official_client_manual": {
+    "status": "passed",
+    "confirmed_at": "2026-10-31T16:32:56.189732+08:00",
+    "source": "user-operated official clients; user confirmation in current conversation",
+    "mac_authenticated_remote_connection": "passed",
+    "windows_synced_credential_connection": "passed",
+    "user_confirmation": "mac连接成功， windows免密成功",
+    "client_version_user_reported": "1.5.0",
+    "scope": "the tested Mac, Windows and third target; not a full platform matrix"
+  },
+  "existing_identity_preflight": {
+    "matched": true,
+    "public_sha256": "b46df5ea550b597b78504e33c96a5ec7ff1f23fefd1a22cc1b297111aefae31d",
+    "private_key_exported": false
+  },
+  "boundaries": [
+    "no API token validation or remote ACL",
+    "existing hbbr and account API unchanged",
+    "previous independent-patch tests are historical only"
+  ],
+  "production_compose_preview": {
+    "status": "passed",
+    "hbbs_changed_fields": [
+      "command",
+      "environment",
+      "image",
+      "pull_policy"
+    ],
+    "network_and_mounts_preserved": true,
+    "other_services_preserved": true,
+    "configuration_applied": true
+  },
+  "build_preparation": {
+    "initial_attempt": "failed before test execution: upstream SQLx compile database configuration omitted from Dockerfile",
+    "correction": "include upstream .env and db_v2.sqlite3 in build stage only; add persistent target build cache",
+    "business_source_changed": false,
+    "retry": "passed"
+  },
+  "deployment": {
+    "deployed_at": "2026-10-31T08:25:28.471784+00:00",
+    "image": "rustdesk-hbbs-pr734:ef2166f7-amd64",
+    "image_id": "sha256:f9d74b60499cd4f84c3a5ae8edef62aa15178c1140a85e4d38d2f68542a4bd25",
+    "backup_path": "/home/migu/app/usr/rustdesk/backups/pre-pr734-20261031T082523Z",
+    "backup_sha256": "51b0170b87a48b2c452fe2cbb1a309ab68f932adc8bded8f3b4630edc81251e6",
+    "original_image_id": "sha256:ae1522abfa7f00e85c2dbadd3a1d68bab5f4f7a39ff742f05d22ea64a7c6529b",
+    "feature_switch_logs_verified": [
+      "SECURE_TCP=Y",
+      "IPV6_PUNCH=N",
+      "WEBRTC=N",
+      "UDP_PUNCH=N"
+    ],
+    "other_containers_unchanged": true,
+    "api_health": {
+      "healthz": 200,
+      "readyz": 200
+    },
+    "rollback_script": "/home/migu/app/usr/rustdesk/backups/pre-pr734-20261031T082523Z/rollback.sh",
+    "private_key_exported": false,
+    "status_at_deployment": "deployed_manual_pending"
+  },
+  "image_archive_sha256": "0a306e9ab7aafc352f5e4af2581d6c9b2126bec46beb76d0063db29fabf4ab55",
+  "additional_tests_after_manual_confirmation": false
+}

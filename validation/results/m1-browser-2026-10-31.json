@@ -1,0 +1,59 @@
+{
+  "status": "pass",
+  "recorded_at": "2026-10-30T18:40:34.611461+00:00",
+  "method": "CUA in-app browser, actual built Vue UI with isolated API and real Keycloak",
+  "platform": "macOS 27.0.1 arm64",
+  "run_namespace": "20261030183546_e0585f9f",
+  "api_binary_sha256": "9e2d0583916bb336c92f50fa73a896fa99f2b10ed185011efad7a3815cfd8b8d",
+  "cases": [
+    {
+      "case": "browser.local-admin-login-session-view",
+      "status": "pass"
+    },
+    {
+      "case": "browser.admin-user-list-target-session-panel",
+      "status": "pass"
+    },
+    {
+      "case": "browser.local-logout",
+      "status": "pass"
+    },
+    {
+      "case": "browser.oidc-keycloak-login",
+      "status": "pass"
+    },
+    {
+      "case": "browser.member-no-admin-refresh-persists",
+      "status": "pass"
+    },
+    {
+      "case": "browser.oidc-logout",
+      "status": "pass"
+    }
+  ],
+  "server_sessions": [
+    {
+      "source": "local",
+      "kind": "web",
+      "issued": 1,
+      "revoked": 1,
+      "active": 0
+    },
+    {
+      "source": "oidc",
+      "kind": "web",
+      "issued": 1,
+      "revoked": 1,
+      "active": 0
+    }
+  ],
+  "final_active_sessions": 0,
+  "screenshots": [
+    "validation/results/m1-admin-2026-10-31.png",
+    "validation/results/m1-oidc-2026-10-31.png"
+  ],
+  "limits": [
+    "Account mutations and password forms were verified by HTTP and Rust suites; browser smoke only navigated authenticated UI and logged out",
+    "No additional official RustDesk GUI run in M1; current build protocol is covered by M0 HTTP regression"
+  ]
+}

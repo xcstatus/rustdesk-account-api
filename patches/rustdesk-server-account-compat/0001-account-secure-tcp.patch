@@ -1,0 +1,1072 @@
+diff --git a/src/account_secure_tcp.rs b/src/account_secure_tcp.rs
+new file mode 100644
+--- /dev/null
++++ b/src/account_secure_tcp.rs
+@@ -0,0 +1,413 @@
++//! Opt-in server authentication and encrypted rendezvous transport.
++//! This does not validate API tokens or authorize remote-control sessions.
++
++use hbb_common::{
++    bail,
++    bytes::BytesMut,
++    protobuf::Message,
++    rendezvous_proto::{rendezvous_message, KeyExchange, KxParams, RendezvousMessage},
++    tcp::Encrypt,
++    ResultType,
++};
++use sodiumoxide::crypto::{box_, generichash, secretbox, sign};
++use std::path::Path;
++
++/// Read the persistent key before any legacy key generation can run.
++pub(crate) fn configured_signing_key(key: &str) -> ResultType<Option<sign::SecretKey>> {
++    match std::env::var("HBBS_ACCOUNT_SECURE_TCP") {
++        Err(std::env::VarError::NotPresent) => return Ok(None),
++        Ok(value) if value.is_empty() || value == "0" => return Ok(None),
++        Ok(value) if value == "1" => {}
++        _ => bail!("HBBS_ACCOUNT_SECURE_TCP must be 0 or 1"),
++    }
++    let path =
++        std::env::var_os("HBBS_ACCOUNT_SIGNING_KEY_FILE").unwrap_or_else(|| "id_ed25519".into());
++    load_signing_key(Path::new(&path), key).map(Some)
++}
++
++fn load_signing_key(path: &Path, key: &str) -> ResultType<sign::SecretKey> {
++    sodiumoxide::init().map_err(|_| hbb_common::anyhow::anyhow!("Crypto initialization failed"))?;
++    let contents = std::fs::read_to_string(path).map_err(|_| {
++        hbb_common::anyhow::anyhow!(
++            "Cannot read HBBS_ACCOUNT_SIGNING_KEY_FILE (existing key required)"
++        )
++    })?;
++    validate_signing_key(contents.trim(), key)
++}
++
++fn validate_signing_key(contents: &str, key: &str) -> ResultType<sign::SecretKey> {
++    let raw = base64::decode(contents)
++        .map_err(|_| hbb_common::anyhow::anyhow!("Signing key must be base64"))?;
++    let sk = sign::SecretKey::from_slice(&raw)
++        .ok_or_else(|| hbb_common::anyhow::anyhow!("Signing key must contain 64 bytes"))?;
++    let seed = sign::Seed::from_slice(&raw[..sign::SEEDBYTES])
++        .ok_or_else(|| hbb_common::anyhow::anyhow!("Invalid signing key seed"))?;
++    let (pk, derived_sk) = sign::keypair_from_seed(&seed);
++    if sk != derived_sk {
++        bail!("Signing key public half does not match its seed");
++    }
++    // These legacy values select the existing id_ed25519 key. In this mode
++    // derive its public key directly, without calling gen_sk's creation path.
++    if key != "-" && key != "_" {
++        let configured = base64::decode(key)
++            .map_err(|_| hbb_common::anyhow::anyhow!("Configured -k must match signing key"))?;
++        if configured.as_slice() != pk.as_ref() && configured.as_slice() != sk.as_ref() {
++            bail!("Configured -k does not match signing key");
++        }
++    }
++    Ok(sk)
++}
++
++pub(crate) fn public_key(sk: &sign::SecretKey) -> String {
++    base64::encode(&sk.as_ref()[sign::SEEDBYTES..])
++}
++
++pub(crate) struct Handshake {
++    secret_key: box_::SecretKey,
++    public_key: box_::PublicKey,
++}
++
++pub(crate) struct Session {
++    pub(crate) send: Encrypt,
++    pub(crate) receive: Encrypt,
++}
++
++impl Handshake {
++    pub(crate) fn new(sk: &sign::SecretKey) -> ResultType<(Self, RendezvousMessage)> {
++        let (mut pk, secret_key) = box_::gen_keypair();
++        // X25519 ignores this bit; the client treats it as a requirement to
++        // verify the signed version parameters rather than accepting v0.
++        pk.0[31] |= 0x80;
++        let params = KxParams {
++            pk: pk.as_ref().to_vec().into(),
++            version: 1,
++            ..Default::default()
++        };
++        let mut signed_params = b"rdkx-params".to_vec();
++        signed_params.extend_from_slice(&params.write_to_bytes()?);
++        let mut msg = RendezvousMessage::new();
++        msg.set_key_exchange(KeyExchange {
++            keys: vec![sign::sign(pk.as_ref(), sk).into()],
++            version: 1,
++            signed_params: sign::sign(&signed_params, sk).into(),
++            ..Default::default()
++        });
++        Ok((
++            Self {
++                secret_key,
++                public_key: pk,
++            },
++            msg,
++        ))
++    }
++
++    /// A first business frame keeps the connection plaintext. Only an explicit
++    /// KeyExchange selects encryption; a malformed exchange closes it.
++    pub(crate) fn accept_first(self, bytes: &[u8]) -> ResultType<Option<Session>> {
++        let msg = RendezvousMessage::parse_from_bytes(bytes)?;
++        if let Some(rendezvous_message::Union::KeyExchange(exchange)) = msg.union {
++            if exchange.version != 1 || exchange.keys.len() != 2 {
++                bail!("Invalid account secure TCP key exchange");
++            }
++            let shared = Encrypt::decode(&exchange.keys[1], &exchange.keys[0], &self.secret_key)?;
++            return Ok(Some(Session {
++                send: Encrypt::new(direction_key(
++                    &shared,
++                    2,
++                    &exchange.keys[0],
++                    self.public_key.as_ref(),
++                )?),
++                receive: Encrypt::new(direction_key(
++                    &shared,
++                    1,
++                    &exchange.keys[0],
++                    self.public_key.as_ref(),
++                )?),
++            }));
++        }
++        Ok(None)
++    }
++}
++
++// Official hbb_common v1: keyed BLAKE2b-256 over the direction and the
++// authenticated negotiation transcript. The shared key is the BLAKE2b key.
++fn direction_key(
++    shared: &secretbox::Key,
++    direction: u8,
++    client_pk: &[u8],
++    server_pk: &[u8],
++) -> ResultType<secretbox::Key> {
++    let mut input = b"rdkx-spl".to_vec();
++    input.push(direction);
++    input.extend_from_slice(&1u32.to_le_bytes()); // advertised version
++    input.extend_from_slice(&1u32.to_le_bytes()); // selected version
++    input.extend_from_slice(client_pk);
++    input.extend_from_slice(server_pk);
++    let mut hash = generichash::State::new(Some(secretbox::KEYBYTES), Some(shared.as_ref()))
++        .map_err(|_| hbb_common::anyhow::anyhow!("Account secure TCP key derivation failed"))?;
++    hash.update(&input)
++        .map_err(|_| hbb_common::anyhow::anyhow!("Account secure TCP key derivation failed"))?;
++    let digest = hash
++        .finalize()
++        .map_err(|_| hbb_common::anyhow::anyhow!("Account secure TCP key derivation failed"))?;
++    secretbox::Key::from_slice(digest.as_ref())
++        .ok_or_else(|| hbb_common::anyhow::anyhow!("Invalid derived key length"))
++}
++
++pub(crate) fn decrypt(encrypt: &mut Encrypt, bytes: &mut BytesMut) -> ResultType<()> {
++    // The caller handles empty control frames without advancing the counter.
++    // Encrypt::dec also permits one-byte plaintext, which rendezvous must reject.
++    if bytes.len() < secretbox::MACBYTES {
++        bail!("Account secure TCP frame is too short");
++    }
++    encrypt.dec(bytes)?;
++    Ok(())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use hbb_common::rendezvous_proto::{PunchHoleRequest, TestNatRequest};
++
++    fn exchange() -> (Session, secretbox::Key, secretbox::Key) {
++        sodiumoxide::init().unwrap();
++        let (pk, sk) = sign::gen_keypair();
++        let (handshake, offer) = Handshake::new(&sk).unwrap();
++        let signed = &offer.key_exchange().keys;
++        assert_eq!(signed.len(), 1);
++        let ephemeral = sign::verify(&signed[0], &pk).unwrap();
++        assert_eq!(ephemeral.len(), box_::PUBLICKEYBYTES);
++        assert_ne!(ephemeral[31] & 0x80, 0);
++        assert_eq!(offer.key_exchange().version, 1);
++        let signed_params = sign::verify(&offer.key_exchange().signed_params, &pk).unwrap();
++        assert!(signed_params.starts_with(b"rdkx-params"));
++        let params = KxParams::parse_from_bytes(&signed_params[b"rdkx-params".len()..]).unwrap();
++        assert_eq!(params.pk.as_ref(), ephemeral.as_slice());
++        assert_eq!(params.version, 1);
++        let server_pk = box_::PublicKey::from_slice(&ephemeral).unwrap();
++        let (client_pk, client_sk) = box_::gen_keypair();
++        let key = secretbox::gen_key();
++        let sealed = box_::seal(
++            key.as_ref(),
++            &box_::Nonce([0; box_::NONCEBYTES]),
++            &server_pk,
++            &client_sk,
++        );
++        let mut answer = RendezvousMessage::new();
++        answer.set_key_exchange(KeyExchange {
++            keys: vec![client_pk.as_ref().to_vec().into(), sealed.into()],
++            version: 1,
++            ..Default::default()
++        });
++        let encrypt = handshake
++            .accept_first(&answer.write_to_bytes().unwrap())
++            .unwrap()
++            .unwrap();
++        (
++            encrypt,
++            direction_key(&key, 1, client_pk.as_ref(), &ephemeral).unwrap(),
++            direction_key(&key, 2, client_pk.as_ref(), &ephemeral).unwrap(),
++        )
++    }
++
++    fn nonce(counter: u64) -> secretbox::Nonce {
++        let mut nonce = secretbox::Nonce([0; secretbox::NONCEBYTES]);
++        nonce.0[..8].copy_from_slice(&counter.to_le_bytes());
++        nonce
++    }
++
++    #[test]
++    fn signed_exchange_and_independent_ordered_counters() {
++        let (mut session, client_send, client_receive) = exchange();
++        for counter in 1..=3 {
++            let mut frame = BytesMut::from(
++                secretbox::seal(b"client request", &nonce(counter), &client_send).as_slice(),
++            );
++            decrypt(&mut session.receive, &mut frame).unwrap();
++            assert_eq!(frame.as_ref(), b"client request");
++            assert_eq!(
++                secretbox::open(
++                    &session.send.enc(b"async response"),
++                    &nonce(counter),
++                    &client_receive
++                )
++                .unwrap(),
++                b"async response"
++            );
++        }
++    }
++
++    #[test]
++    fn tampered_replayed_and_short_ciphertext_are_rejected() {
++        let (session, key, _) = exchange();
++        let mut encrypt = session.receive;
++        let sealed = secretbox::seal(b"request", &nonce(1), &key);
++        decrypt(&mut encrypt, &mut BytesMut::from(sealed.as_slice())).unwrap();
++        assert!(decrypt(&mut encrypt, &mut BytesMut::from(sealed.as_slice())).is_err());
++        let (session, _, _) = exchange();
++        let mut encrypt = session.receive;
++        assert!(decrypt(&mut encrypt, &mut BytesMut::from(&b"x"[..])).is_err());
++        assert!(decrypt(&mut encrypt, &mut BytesMut::from(&[0u8; 32][..])).is_err());
++    }
++
++    #[test]
++    fn non_keyexchange_first_frames_remain_plaintext() {
++        sodiumoxide::init().unwrap();
++        let (_, sk) = sign::gen_keypair();
++        let mut punch = RendezvousMessage::new();
++        punch.set_punch_hole_request(PunchHoleRequest::new());
++        let mut nat = RendezvousMessage::new();
++        nat.set_test_nat_request(TestNatRequest::new());
++        for msg in [punch, nat] {
++            let bytes = msg.write_to_bytes().unwrap();
++            let (handshake, _) = Handshake::new(&sk).unwrap();
++            assert!(handshake.accept_first(&bytes).unwrap().is_none());
++            assert_eq!(RendezvousMessage::parse_from_bytes(&bytes).unwrap(), msg);
++        }
++    }
++
++    #[test]
++    fn malformed_exchange_is_rejected() {
++        sodiumoxide::init().unwrap();
++        let (_, sk) = sign::gen_keypair();
++        for keys in [
++            vec![],
++            vec![vec![0; 32]],
++            vec![vec![0; 32], vec![0; 48]],
++            vec![vec![0; 31], vec![0; 48]],
++        ] {
++            let (handshake, _) = Handshake::new(&sk).unwrap();
++            let mut msg = RendezvousMessage::new();
++            msg.set_key_exchange(KeyExchange {
++                keys: keys.into_iter().map(Into::into).collect(),
++                version: 1,
++                ..Default::default()
++            });
++            assert!(handshake
++                .accept_first(&msg.write_to_bytes().unwrap())
++                .is_err());
++        }
++    }
++
++    #[test]
++    fn authenticated_box_with_wrong_secretbox_key_length_is_rejected() {
++        sodiumoxide::init().unwrap();
++        let (pk, sk) = sign::gen_keypair();
++        let (handshake, offer) = Handshake::new(&sk).unwrap();
++        let ephemeral = sign::verify(&offer.key_exchange().keys[0], &pk).unwrap();
++        let server_pk = box_::PublicKey::from_slice(&ephemeral).unwrap();
++        let (client_pk, client_sk) = box_::gen_keypair();
++        let sealed = box_::seal(
++            &[0; secretbox::KEYBYTES - 1],
++            &box_::Nonce([0; box_::NONCEBYTES]),
++            &server_pk,
++            &client_sk,
++        );
++        let mut answer = RendezvousMessage::new();
++        answer.set_key_exchange(KeyExchange {
++            keys: vec![client_pk.as_ref().to_vec().into(), sealed.into()],
++            version: 1,
++            ..Default::default()
++        });
++        assert!(handshake
++            .accept_first(&answer.write_to_bytes().unwrap())
++            .is_err());
++    }
++
++    #[test]
++    fn offer_rejects_wrong_identity_and_tampering() {
++        sodiumoxide::init().unwrap();
++        let (pk, sk) = sign::gen_keypair();
++        let (_, offer) = Handshake::new(&sk).unwrap();
++        let signed = &offer.key_exchange().keys[0];
++        let (other_pk, _) = sign::gen_keypair();
++        assert!(sign::verify(signed, &other_pk).is_err());
++        let mut tampered = signed.to_vec();
++        tampered[0] ^= 1;
++        assert!(sign::verify(&tampered, &pk).is_err());
++        assert!(sign::verify(&offer.key_exchange().signed_params, &other_pk).is_err());
++        let mut tampered = offer.key_exchange().signed_params.to_vec();
++        tampered[0] ^= 1;
++        assert!(sign::verify(&tampered, &pk).is_err());
++    }
++
++    #[test]
++    fn official_v1_direction_key_golden_vectors() {
++        sodiumoxide::init().unwrap();
++        let shared = secretbox::Key([0x11; 32]);
++        let client = [0x22; 32];
++        let server = [0x33; 32];
++        let hex = |bytes: &[u8]| {
++            bytes
++                .iter()
++                .map(|byte| format!("{byte:02x}"))
++                .collect::<String>()
++        };
++        assert_eq!(
++            hex(direction_key(&shared, 1, &client, &server)
++                .unwrap()
++                .as_ref()),
++            "c189ec6e1935c0751cfc85a0f075405cae507d7925bb19687caf56cbb54e0ecf"
++        );
++        assert_eq!(
++            hex(direction_key(&shared, 2, &client, &server)
++                .unwrap()
++                .as_ref()),
++            "8a62648e9195cb10ea900c0a24d2a166c1e982347a2dc6833c3e756bf5715d36"
++        );
++    }
++
++    #[test]
++    fn outgoing_ciphertext_cannot_be_reflected_as_incoming() {
++        let (mut session, _, _) = exchange();
++        let mut reflected = BytesMut::from(session.send.enc(b"response").as_slice());
++        assert!(decrypt(&mut session.receive, &mut reflected).is_err());
++    }
++
++    #[test]
++    fn downgrade_and_unsupported_versions_are_rejected_before_box_decode() {
++        sodiumoxide::init().unwrap();
++        let (_, sk) = sign::gen_keypair();
++        for version in [0, 2, 3, u32::MAX] {
++            let (handshake, _) = Handshake::new(&sk).unwrap();
++            let mut reply = RendezvousMessage::new();
++            reply.set_key_exchange(KeyExchange {
++                keys: vec![vec![0; 32].into(), vec![0; 48].into()],
++                version,
++                ..Default::default()
++            });
++            let err = handshake
++                .accept_first(&reply.write_to_bytes().unwrap())
++                .err()
++                .unwrap();
++            assert_eq!(err.to_string(), "Invalid account secure TCP key exchange");
++        }
++    }
++
++    #[test]
++    fn persistent_signing_key_must_be_valid_and_match_configured_key() {
++        sodiumoxide::init().unwrap();
++        let (pk, sk) = sign::gen_keypair();
++        let encoded = base64::encode(sk.as_ref());
++        for configured in [
++            "-".to_owned(),
++            "_".to_owned(),
++            base64::encode(pk.as_ref()),
++            encoded.clone(),
++        ] {
++            assert!(validate_signing_key(&encoded, &configured).is_ok());
++        }
++        assert!(validate_signing_key(&encoded, "").is_err());
++        assert!(validate_signing_key("bad base64", "-").is_err());
++        assert!(validate_signing_key(&base64::encode([0; 32]), "-").is_err());
++        let mut bad = sk.as_ref().to_vec();
++        bad[63] ^= 1;
++        assert!(validate_signing_key(&base64::encode(bad), "-").is_err());
++        let (other_pk, _) = sign::gen_keypair();
++        assert!(validate_signing_key(&encoded, &base64::encode(other_pk.as_ref())).is_err());
++        let missing =
++            std::env::temp_dir().join(format!("hbbs-missing-key-{}", uuid::Uuid::new_v4()));
++        assert!(load_signing_key(&missing, "-").is_err());
++        assert!(!missing.exists());
++    }
++}
+diff --git a/src/rendezvous_server.rs b/src/rendezvous_server.rs
+--- a/src/rendezvous_server.rs
++++ b/src/rendezvous_server.rs
+@@ -1,3 +1,4 @@
++use crate::account_secure_tcp::{self, Handshake};
+ use crate::common::*;
+ use crate::peer::*;
+ use hbb_common::{
+@@ -16,7 +17,7 @@
+         register_pk_response::Result::{TOO_FREQUENT, UUID_MISMATCH},
+         *,
+     },
+-    tcp::{listen_any, FramedStream},
++    tcp::{listen_any, Encrypt, FramedStream},
+     timeout,
+     tokio::{
+         self,
+@@ -51,7 +52,9 @@
+ type TcpStreamSink = SplitSink<Framed<TcpStream, BytesCodec>, Bytes>;
+ type WsSink = SplitSink<tokio_tungstenite::WebSocketStream<TcpStream>, tungstenite::Message>;
+ enum Sink {
+-    TcpStream(TcpStreamSink),
++    // Encryption moves with the only owner of this connection's send half,
++    // including when tcp_punch hands it to an asynchronous response task.
++    TcpStream(TcpStreamSink, Option<Encrypt>),
+     Ws(WsSink),
+ }
+ type Sender = mpsc::UnboundedSender<Data>;
+@@ -77,6 +80,7 @@
+     mask: Option<Ipv4Network>,
+     local_ip: String,
+     sk: Option<sign::SecretKey>,
++    account_secure_tcp: bool,
+ }
+ 
+ #[derive(Clone)]
+@@ -100,7 +104,15 @@
+ impl RendezvousServer {
+     #[tokio::main(flavor = "multi_thread")]
+     pub async fn start(port: i32, serial: i32, key: &str, rmem: usize) -> ResultType<()> {
+-        let (key, sk) = Self::get_server_sk(key);
++        let secure_sk = account_secure_tcp::configured_signing_key(key)?;
++        let account_secure_tcp = secure_sk.is_some();
++        let (key, sk) = match secure_sk {
++            Some(sk) => (account_secure_tcp::public_key(&sk), Some(sk)),
++            None => Self::get_server_sk(key),
++        };
++        if account_secure_tcp {
++            log::info!("Account secure TCP enabled (server authentication and transport encryption only)");
++        }
+         let nat_port = port - 1;
+         let ws_port = port + 2;
+         let pm = PeerMap::new().await?;
+@@ -139,6 +151,7 @@
+                 version,
+                 software_url,
+                 sk,
++                account_secure_tcp,
+                 mask,
+                 local_ip,
+             }),
+@@ -823,7 +836,11 @@
+         if let Some(sink) = sink.as_mut() {
+             if let Ok(bytes) = msg.write_to_bytes() {
+                 match sink {
+-                    Sink::TcpStream(s) => {
++                    Sink::TcpStream(s, encrypt) => {
++                        let bytes = match encrypt.as_mut() {
++                            Some(encrypt) => encrypt.enc(&bytes),
++                            None => bytes,
++                        };
+                         allow_err!(s.send(Bytes::from(bytes)).await);
+                     }
+                     Sink::Ws(ws) => {
+@@ -1149,6 +1166,7 @@
+         ws: bool,
+     ) -> ResultType<()> {
+         let mut sink;
++        let mut transport_error = None;
+         if ws {
+             use tokio_tungstenite::tungstenite::handshake::server::{Request, Response};
+             let callback = |req: &Request, response: Response| {
+@@ -1177,9 +1195,49 @@
+                 }
+             }
+         } else {
+-            let (a, mut b) = Framed::new(stream, BytesCodec::new()).split();
+-            sink = Some(Sink::TcpStream(a));
+-            while let Ok(Some(Ok(bytes))) = timeout(30_000, b.next()).await {
++            let (mut a, mut b) = Framed::new(stream, BytesCodec::new()).split();
++            let mut handshake = if self.inner.account_secure_tcp {
++                let sk = self.inner.sk.as_ref().ok_or_else(|| {
++                    hbb_common::anyhow::anyhow!("Account secure TCP signing key unavailable")
++                })?;
++                let (handshake, offer) = Handshake::new(sk)?;
++                timeout(30_000, a.send(Bytes::from(offer.write_to_bytes()?))).await??;
++                Some(handshake)
++            } else {
++                None
++            };
++            sink = Some(Sink::TcpStream(a, None));
++            let mut decrypt = None;
++            while let Ok(Some(Ok(mut bytes))) = timeout(30_000, b.next()).await {
++                if let Some(first) = handshake.take() {
++                    match first.accept_first(&bytes) {
++                        Ok(Some(session)) => {
++                            // Each direction has its own derived key and counter.
++                            // The send state stays with the cached Sink.
++                            if let Some(Sink::TcpStream(_, send_encrypt)) = sink.as_mut() {
++                                *send_encrypt = Some(session.send);
++                            }
++                            decrypt = Some(session.receive);
++                            continue;
++                        }
++                        Ok(None) => {}
++                        Err(err) => {
++                            transport_error = Some(err);
++                            break;
++                        }
++                    }
++                }
++                if let Some(encrypt) = decrypt.as_mut() {
++                    // Official rendezvous keepalives are empty control frames
++                    // outside encryption and do not advance either counter.
++                    if bytes.is_empty() {
++                        continue;
++                    }
++                    if let Err(err) = account_secure_tcp::decrypt(encrypt, &mut bytes) {
++                        transport_error = Some(err);
++                        break;
++                    }
++                }
+                 if !self.handle_tcp(&bytes, &mut sink, addr, key, ws).await {
+                     break;
+                 }
+@@ -1189,6 +1247,9 @@
+             self.tcp_punch.lock().await.remove(&try_into_v4(addr));
+         }
+         log::debug!("Tcp connection from {:?} closed", addr);
++        if let Some(err) = transport_error {
++            return Err(err);
++        }
+         Ok(())
+     }
+ 
+@@ -1361,3 +1422,42 @@
+     log::debug!("listen on tcp {:?}", s.local_addr());
+     Ok(s)
+ }
++
++#[cfg(test)]
++mod account_secure_tcp_tests {
++    use super::*;
++    use sodiumoxide::crypto::secretbox;
++
++    #[tokio::test]
++    async fn cached_sink_preserves_encrypted_response_order() {
++        sodiumoxide::init().unwrap();
++        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
++        let addr = listener.local_addr().unwrap();
++        let (client, accepted) = tokio::join!(TcpStream::connect(addr), listener.accept());
++        let (server, peer) = accepted.unwrap();
++        let (send, _receive) = Framed::new(server, BytesCodec::new()).split();
++        let mut client = Framed::new(client.unwrap(), BytesCodec::new());
++        let key = secretbox::gen_key();
++        let mut sink = Some(Sink::TcpStream(send, Some(Encrypt::new(key.clone()))));
++        let mut response = RendezvousMessage::new();
++        response.set_punch_hole_response(PunchHoleResponse::new());
++        RendezvousServer::send_to_sink(&mut sink, response.clone()).await;
++
++        // Move the same send state through the cache and into a spawned task,
++        // as send_to_tcp does for a delayed PunchHoleResponse.
++        let mut cache = HashMap::new();
++        cache.insert(peer, sink.take().unwrap());
++        let mut cached = cache.remove(&peer);
++        let expected = response.write_to_bytes().unwrap();
++        let task = tokio::spawn(async move {
++            RendezvousServer::send_to_sink(&mut cached, response).await;
++        });
++        for counter in 1u64..=2 {
++            let frame = timeout(1_000, client.next()).await.unwrap().unwrap().unwrap();
++            let mut nonce = secretbox::Nonce([0; secretbox::NONCEBYTES]);
++            nonce.0[..8].copy_from_slice(&counter.to_le_bytes());
++            assert_eq!(secretbox::open(&frame, &nonce, &key).unwrap(), expected);
++        }
++        task.await.unwrap();
++    }
++}
+diff --git a/src/lib.rs b/src/lib.rs
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -1,3 +1,4 @@
++mod account_secure_tcp;
+ mod rendezvous_server;
+ pub use rendezvous_server::*;
+ pub mod common;
+diff --git a/libs/hbb_common/protos/rendezvous.proto b/libs/hbb_common/protos/rendezvous.proto
+--- a/libs/hbb_common/protos/rendezvous.proto
++++ b/libs/hbb_common/protos/rendezvous.proto
+@@ -164,6 +164,13 @@
+ 
+ message KeyExchange {
+   repeated bytes keys = 1; 
++  uint32 version = 2;
++  bytes signed_params = 3;
++}
++
++message KxParams {
++  bytes pk = 1;
++  uint32 version = 2;
+ }
+ 
+ message HealthCheck {
+diff --git a/tests/account_secure_tcp.rs b/tests/account_secure_tcp.rs
+new file mode 100644
+--- /dev/null
++++ b/tests/account_secure_tcp.rs
+@@ -0,0 +1,436 @@
++//! Real hbbs-process regression tests using the official hbb_common framing.
++use hbb_common::{
++    protobuf::Message,
++    rendezvous_proto::*,
++    tcp::{Encrypt, FramedStream},
++    tokio::{
++        self,
++        net::UdpSocket,
++        time::{sleep, timeout, Duration},
++    },
++    AddrMangle,
++};
++use sodiumoxide::crypto::{box_, generichash, secretbox, sign};
++use std::{
++    fs::{self, File},
++    net::{SocketAddr, TcpListener},
++    process::{Child, Command, Stdio},
++};
++
++struct Server {
++    child: Child,
++    dir: TestDir,
++    port: u16,
++    pk: sign::PublicKey,
++}
++
++struct TestDir(std::path::PathBuf);
++
++impl TestDir {
++    fn new() -> Self {
++        let path = std::env::temp_dir().join(format!("hbbs-compat-test-{}", uuid::Uuid::new_v4()));
++        let mut builder = fs::DirBuilder::new();
++        #[cfg(unix)]
++        {
++            use std::os::unix::fs::DirBuilderExt;
++            builder.mode(0o700);
++        }
++        builder.create(&path).unwrap();
++        Self(path)
++    }
++
++    fn path(&self) -> &std::path::Path {
++        &self.0
++    }
++}
++
++impl Drop for TestDir {
++    fn drop(&mut self) {
++        let _ = fs::remove_dir_all(&self.0);
++    }
++}
++
++impl Drop for Server {
++    fn drop(&mut self) {
++        let _ = self.child.kill();
++        let _ = self.child.wait();
++    }
++}
++
++fn unused_port() -> u16 {
++    for _ in 0..100 {
++        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
++        let port = listener.local_addr().unwrap().port();
++        if port < 1025 || port > 65532 {
++            continue;
++        }
++        if let (Ok(_nat), Ok(_ws), Ok(_udp)) = (
++            TcpListener::bind(("127.0.0.1", port - 1)),
++            TcpListener::bind(("127.0.0.1", port + 2)),
++            std::net::UdpSocket::bind(("127.0.0.1", port)),
++        ) {
++            return port;
++        }
++    }
++    panic!("no isolated test ports available");
++}
++
++fn command(dir: &std::path::Path, port: u16, key: &str) -> Command {
++    let mut command = Command::new(env!("CARGO_BIN_EXE_hbbs"));
++    // Do not inherit real service environment or a database destination.
++    command
++        .env_clear()
++        .current_dir(dir)
++        .args(["-p", &port.to_string(), "-k", key])
++        .stdout(Stdio::from(File::create(dir.join("stdout.log")).unwrap()))
++        .stderr(Stdio::from(File::create(dir.join("stderr.log")).unwrap()));
++    command
++}
++
++async fn start(enabled: bool) -> Server {
++    sodiumoxide::init().unwrap();
++    let dir = TestDir::new();
++    let (pk, sk) = sign::gen_keypair();
++    let path = dir.path().join("existing-signing-key");
++    fs::write(&path, base64::encode(sk.as_ref())).unwrap();
++    #[cfg(unix)]
++    {
++        use std::os::unix::fs::PermissionsExt;
++        fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
++    }
++    let port = unused_port();
++    let mut command = command(dir.path(), port, &base64::encode(pk.as_ref()));
++    if enabled {
++        command
++            .env("HBBS_ACCOUNT_SECURE_TCP", "1")
++            .env("HBBS_ACCOUNT_SIGNING_KEY_FILE", &path);
++    }
++    let mut child = command.spawn().unwrap();
++    for _ in 0..100 {
++        if let Some(status) = child.try_wait().unwrap() {
++            panic!(
++                "isolated hbbs exited {status}: {}",
++                fs::read_to_string(dir.path().join("stderr.log")).unwrap()
++            );
++        }
++        if tokio::net::TcpStream::connect(("127.0.0.1", port))
++            .await
++            .is_ok()
++        {
++            return Server {
++                child,
++                dir,
++                port,
++                pk,
++            };
++        }
++        sleep(Duration::from_millis(50)).await;
++    }
++    let _ = child.kill();
++    let _ = child.wait();
++    panic!("isolated hbbs did not become ready");
++}
++
++struct ProbeStream {
++    stream: FramedStream,
++    send: Option<Encrypt>,
++    receive: Option<Encrypt>,
++}
++
++impl ProbeStream {
++    async fn send(&mut self, message: &RendezvousMessage) {
++        let plain = message.write_to_bytes().unwrap();
++        let wire = match &mut self.send {
++            Some(cipher) => cipher.enc(&plain),
++            None => plain,
++        };
++        self.stream.send_raw(wire).await.unwrap();
++    }
++}
++
++async fn read(stream: &mut ProbeStream) -> RendezvousMessage {
++    let mut bytes = stream
++        .stream
++        .next_timeout(3000)
++        .await
++        .expect("response timeout")
++        .expect("frame read failed");
++    if let Some(cipher) = &mut stream.receive {
++        cipher.dec(&mut bytes).unwrap();
++    }
++    RendezvousMessage::parse_from_bytes(&bytes).expect("invalid response protobuf")
++}
++
++// Independent official-client reference, pinned hbb_common 229b904508364c8997aad0fb5af57effac859f60:
++// src/tcp.rs:320-356, with the upstream golden vector checked below.
++fn client_key(
++    shared: &secretbox::Key,
++    direction: u8,
++    client_pk: &[u8],
++    server_pk: &[u8],
++) -> secretbox::Key {
++    let mut hash = generichash::State::new(Some(32), Some(shared.as_ref())).unwrap();
++    hash.update(b"rdkx-spl").unwrap();
++    hash.update(&[direction]).unwrap();
++    hash.update(&1u32.to_le_bytes()).unwrap();
++    hash.update(&1u32.to_le_bytes()).unwrap();
++    hash.update(client_pk).unwrap();
++    hash.update(server_pk).unwrap();
++    secretbox::Key::from_slice(hash.finalize().unwrap().as_ref()).unwrap()
++}
++
++#[test]
++fn client_reference_matches_official_directional_key_vectors() {
++    let shared = secretbox::Key([0x11; 32]);
++    let hex = |key: secretbox::Key| {
++        key.as_ref()
++            .iter()
++            .map(|x| format!("{x:02x}"))
++            .collect::<String>()
++    };
++    assert_eq!(
++        hex(client_key(&shared, 1, &[0x22; 32], &[0x33; 32])),
++        "c189ec6e1935c0751cfc85a0f075405cae507d7925bb19687caf56cbb54e0ecf"
++    );
++    assert_eq!(
++        hex(client_key(&shared, 2, &[0x22; 32], &[0x33; 32])),
++        "8a62648e9195cb10ea900c0a24d2a166c1e982347a2dc6833c3e756bf5715d36"
++    );
++}
++
++async fn connect(server: &Server, encrypted: bool) -> ProbeStream {
++    let stream = FramedStream::new(format!("127.0.0.1:{}", server.port), None, 3000)
++        .await
++        .unwrap();
++    let mut stream = ProbeStream {
++        stream,
++        send: None,
++        receive: None,
++    };
++    let offer = read(&mut stream).await;
++    assert!(matches!(
++        offer.union,
++        Some(rendezvous_message::Union::KeyExchange(_))
++    ));
++    let keys = &offer.key_exchange().keys;
++    assert_eq!(keys.len(), 1);
++    let ephemeral = sign::verify(&keys[0], &server.pk).unwrap();
++    let wrong_pk = sign::gen_keypair().0;
++    assert!(sign::verify(&keys[0], &wrong_pk).is_err());
++    assert_eq!(offer.key_exchange().version, 1);
++    assert_ne!(ephemeral[31] & 0x80, 0);
++    let parameters = sign::verify(&offer.key_exchange().signed_params, &server.pk).unwrap();
++    let parameters = parameters.strip_prefix(b"rdkx-params").unwrap();
++    let parameters = KxParams::parse_from_bytes(parameters).unwrap();
++    assert_eq!(parameters.pk.as_ref(), ephemeral.as_slice());
++    assert_eq!(parameters.version, 1);
++    let remote_pk = box_::PublicKey::from_slice(&ephemeral).unwrap();
++    if encrypted {
++        let (pk, sk) = box_::gen_keypair();
++        let key = secretbox::gen_key();
++        let mut reply = RendezvousMessage::new();
++        reply.set_key_exchange(KeyExchange {
++            keys: vec![
++                pk.as_ref().to_vec().into(),
++                box_::seal(
++                    key.as_ref(),
++                    &box_::Nonce([0; box_::NONCEBYTES]),
++                    &remote_pk,
++                    &sk,
++                )
++                .into(),
++            ],
++            version: 1,
++            ..Default::default()
++        });
++        stream.send(&reply).await;
++        stream.send = Some(Encrypt::new(client_key(&key, 1, pk.as_ref(), &ephemeral)));
++        stream.receive = Some(Encrypt::new(client_key(&key, 2, pk.as_ref(), &ephemeral)));
++    }
++    stream
++}
++
++async fn test_nat(stream: &mut ProbeStream) {
++    let mut request = RendezvousMessage::new();
++    request.set_test_nat_request(TestNatRequest::default());
++    stream.send(&request).await;
++    let response = read(stream).await;
++    assert!(matches!(
++        response.union,
++        Some(rendezvous_message::Union::TestNatResponse(_))
++    ));
++    assert!(response.test_nat_response().port > 0);
++}
++
++#[tokio::test]
++async fn encrypted_and_legacy_connections_share_the_existing_server_key() {
++    let server = start(true).await;
++    let mut encrypted = connect(&server, true).await;
++    encrypted.stream.send_raw(Vec::new()).await.unwrap();
++    test_nat(&mut encrypted).await;
++    test_nat(&mut connect(&server, false).await).await;
++    assert!(
++        !server.dir.path().join("id_ed25519").exists(),
++        "must not generate a replacement key"
++    );
++}
++
++#[tokio::test]
++async fn explicit_legacy_exchange_cannot_downgrade_the_encrypted_connection() {
++    let server = start(true).await;
++    let stream = FramedStream::new(format!("127.0.0.1:{}", server.port), None, 3000)
++        .await
++        .unwrap();
++    let mut stream = ProbeStream {
++        stream,
++        send: None,
++        receive: None,
++    };
++    let offer = read(&mut stream).await;
++    let ephemeral = sign::verify(&offer.key_exchange().keys[0], &server.pk).unwrap();
++    let server_pk = box_::PublicKey::from_slice(&ephemeral).unwrap();
++    let (client_pk, client_sk) = box_::gen_keypair();
++    let mut reply = RendezvousMessage::new();
++    reply.set_key_exchange(KeyExchange {
++        keys: vec![
++            client_pk.as_ref().to_vec().into(),
++            box_::seal(
++                secretbox::gen_key().as_ref(),
++                &box_::Nonce([0; box_::NONCEBYTES]),
++                &server_pk,
++                &client_sk,
++            )
++            .into(),
++        ],
++        version: 0,
++        ..Default::default()
++    });
++    stream.send(&reply).await;
++    let result = timeout(Duration::from_secs(2), stream.stream.next())
++        .await
++        .expect("downgrade must close promptly");
++    assert!(result.is_none() || result.unwrap().is_err());
++}
++
++#[tokio::test]
++async fn disabled_mode_keeps_original_plaintext_first_message_behavior() {
++    let server = start(false).await;
++    let stream = FramedStream::new(format!("127.0.0.1:{}", server.port), None, 3000)
++        .await
++        .unwrap();
++    let mut stream = ProbeStream {
++        stream,
++        send: None,
++        receive: None,
++    };
++    test_nat(&mut stream).await;
++}
++
++#[tokio::test]
++async fn encrypted_punch_response_uses_the_cached_connection_sink() {
++    let server = start(true).await;
++    let target = UdpSocket::bind("127.0.0.1:0").await.unwrap();
++    let mut register = RendezvousMessage::new();
++    register.set_register_pk(RegisterPk {
++        id: "probe-target".into(),
++        uuid: vec![7; 16].into(),
++        pk: vec![8; 32].into(),
++        ..Default::default()
++    });
++    target
++        .send_to(
++            &register.write_to_bytes().unwrap(),
++            ("127.0.0.1", server.port),
++        )
++        .await
++        .unwrap();
++    let mut buffer = [0; 8192];
++    let (len, _) = timeout(Duration::from_secs(3), target.recv_from(&mut buffer))
++        .await
++        .unwrap()
++        .unwrap();
++    let registered = RendezvousMessage::parse_from_bytes(&buffer[..len]).unwrap();
++    assert!(matches!(
++        registered.union,
++        Some(rendezvous_message::Union::RegisterPkResponse(_))
++    ));
++    assert_eq!(
++        registered
++            .register_pk_response()
++            .result
++            .enum_value()
++            .unwrap(),
++        register_pk_response::Result::OK
++    );
++
++    let mut controller = connect(&server, true).await;
++    let mut punch = RendezvousMessage::new();
++    punch.set_punch_hole_request(PunchHoleRequest {
++        id: "probe-target".into(),
++        licence_key: base64::encode(server.pk.as_ref()),
++        token: "probe-account-token".into(),
++        ..Default::default()
++    });
++    controller.send(&punch).await;
++    let (len, _) = timeout(Duration::from_secs(3), target.recv_from(&mut buffer))
++        .await
++        .unwrap()
++        .unwrap();
++    let fetch = RendezvousMessage::parse_from_bytes(&buffer[..len]).unwrap();
++    assert!(matches!(
++        fetch.union,
++        Some(rendezvous_message::Union::FetchLocalAddr(_))
++    ));
++    let target_addr: SocketAddr = "127.0.0.1:40001".parse().unwrap();
++    let encoded_addr = AddrMangle::encode(target_addr);
++    let mut local = RendezvousMessage::new();
++    local.set_local_addr(LocalAddr {
++        socket_addr: fetch.fetch_local_addr().socket_addr.clone(),
++        local_addr: encoded_addr.clone().into(),
++        id: "probe-target".into(),
++        ..Default::default()
++    });
++    let mut responder = connect(&server, false).await;
++    responder.send(&local).await;
++    let response = read(&mut controller).await;
++    assert!(matches!(
++        response.union,
++        Some(rendezvous_message::Union::PunchHoleResponse(_))
++    ));
++    assert!(response.punch_hole_response().is_local());
++    assert_eq!(
++        response.punch_hole_response().socket_addr.as_ref(),
++        encoded_addr.as_slice()
++    );
++    for name in ["stdout.log", "stderr.log"] {
++        assert!(!fs::read_to_string(server.dir.path().join(name))
++            .unwrap()
++            .contains("probe-account-token"));
++    }
++}
++
++#[test]
++fn missing_or_mismatched_persistent_key_fails_without_generating_keys() {
++    sodiumoxide::init().unwrap();
++    for missing in [true, false] {
++        let dir = TestDir::new();
++        let keyfile = dir.path().join("existing-signing-key");
++        let (pk, sk) = sign::gen_keypair();
++        if !missing {
++            fs::write(&keyfile, base64::encode(sk.as_ref())).unwrap();
++        }
++        let expected = if missing { pk } else { sign::gen_keypair().0 };
++        let status = command(
++            dir.path(),
++            unused_port(),
++            &base64::encode(expected.as_ref()),
++        )
++        .env("HBBS_ACCOUNT_SECURE_TCP", "1")
++        .env("HBBS_ACCOUNT_SIGNING_KEY_FILE", &keyfile)
++        .status()
++        .unwrap();
++        assert!(!status.success());
++        assert!(!dir.path().join("id_ed25519").exists());
++        assert!(!dir.path().join("id_ed25519.pub").exists());
++    }
++}

@@ -1,0 +1,280 @@
+{
+  "schema_version": 1,
+  "validation_date": "2026-10-31",
+  "timezone": "Asia/Shanghai",
+  "recorded_at": "2026-10-30T17:38:51.520889+00:00",
+  "status": "pass",
+  "scope": "M0 local account API with real Keycloak and persistent SQLite/PostgreSQL; stdlib HTTP browser form/cookie simulation",
+  "api_binary": {
+    "path": "api/target/debug/rustdesk-account-api",
+    "sha256": "62c6ff997d68cc59cd598473e5bf18e610c5160e71791cf1dd41b7048f3cc4bb"
+  },
+  "environment": {
+    "os": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.14.5",
+    "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+    "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+    "docker_server": "28.3.3",
+    "compose_project": "rustdesk-m0",
+    "images": [
+      {
+        "reference": "quay.io/keycloak/keycloak:26.8.1",
+        "image_id": "sha256:355ba91a504b050b00da426cfa71550c59cf98998b31589a23661f5ba86b8335",
+        "repo_digests": [
+          "quay.io/keycloak/keycloak@sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b"
+        ],
+        "architecture": "arm64",
+        "os": "linux"
+      },
+      {
+        "reference": "postgres:16-alpine",
+        "image_id": "sha256:c05eced0bdb41ea9b95a656472a6aa4d50cad0d8a2e33d14eb1c53fd6204f2ae",
+        "repo_digests": [
+          "postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685"
+        ],
+        "architecture": "arm64",
+        "os": "linux"
+      }
+    ],
+    "postgres_server_version": "16.15",
+    "listeners": {
+      "api": "127.0.0.1:21114",
+      "keycloak": "127.0.0.1:18080",
+      "postgres": "127.0.0.1:15432"
+    },
+    "service_state_at_recording": {
+      "api": "stopped after tests",
+      "keycloak": "left running for main agent",
+      "postgres": "left running for main agent"
+    }
+  },
+  "http_validation": {
+    "command_sqlite": "python3 validation/run_m0.py run --database sqlite",
+    "command_postgres": "python3 validation/run_m0.py run --database postgres",
+    "total_cases": 30,
+    "passed_cases": 30,
+    "runs": [
+      {
+        "database": "sqlite",
+        "namespace": "20261030173731_51e3a260",
+        "scope": "real Keycloak authorization-code + PKCE via HTTP forms/cookies; no official client GUI",
+        "cases": [
+          {
+            "case": "setup.isolated-database-cli-users-api",
+            "status": "pass",
+            "seconds": 2.138
+          },
+          {
+            "case": "local.wrong-password",
+            "status": "pass",
+            "seconds": 0.309
+          },
+          {
+            "case": "local.correct-password-two-devices",
+            "status": "pass",
+            "seconds": 0.936
+          },
+          {
+            "case": "local.book-sync-isolation-metadata-invalid-snapshot",
+            "status": "pass",
+            "seconds": 0.059
+          },
+          {
+            "case": "local.logout-all-protected-routes-401",
+            "status": "pass",
+            "seconds": 0.07
+          },
+          {
+            "case": "oidc.options",
+            "status": "pass",
+            "seconds": 0.009
+          },
+          {
+            "case": "oidc.code-pkce-pendingexact-wrongbinding-invalidstate",
+            "status": "pass",
+            "seconds": 0.059
+          },
+          {
+            "case": "oidc.member-real-browser-jit-repeat-single-use",
+            "status": "pass",
+            "seconds": 0.287
+          },
+          {
+            "case": "oidc.book-sync-isolation-metadata-invalid-snapshot",
+            "status": "pass",
+            "seconds": 0.061
+          },
+          {
+            "case": "oidc.logout-all-protected-routes-401",
+            "status": "pass",
+            "seconds": 0.063
+          },
+          {
+            "case": "oidc.admin-wins-both-groups",
+            "status": "pass",
+            "seconds": 0.098
+          },
+          {
+            "case": "oidc.unmatched-default-deny",
+            "status": "pass",
+            "seconds": 0.102
+          },
+          {
+            "case": "oidc.configurable-member-fallback-policy-revocation",
+            "status": "pass",
+            "seconds": 0.399
+          },
+          {
+            "case": "oidc.bad-exchange-never-member-fallback",
+            "status": "pass",
+            "seconds": 0.053
+          },
+          {
+            "case": "oidc.restore-deny-removes-existing-admission",
+            "status": "pass",
+            "seconds": 0.385
+          }
+        ],
+        "status": "pass",
+        "api_binary_sha256": "62c6ff997d68cc59cd598473e5bf18e610c5160e71791cf1dd41b7048f3cc4bb",
+        "finished_at": "2026-10-30T17:37:36.853072+00:00",
+        "source_report": "validation/.runtime/sqlite_20261030173731_51e3a260/report.json"
+      },
+      {
+        "database": "postgres",
+        "namespace": "20261030173803_3ba22bbe",
+        "scope": "real Keycloak authorization-code + PKCE via HTTP forms/cookies; no official client GUI",
+        "cases": [
+          {
+            "case": "setup.isolated-database-cli-users-api",
+            "status": "pass",
+            "seconds": 1.871
+          },
+          {
+            "case": "local.wrong-password",
+            "status": "pass",
+            "seconds": 0.327
+          },
+          {
+            "case": "local.correct-password-two-devices",
+            "status": "pass",
+            "seconds": 0.994
+          },
+          {
+            "case": "local.book-sync-isolation-metadata-invalid-snapshot",
+            "status": "pass",
+            "seconds": 0.172
+          },
+          {
+            "case": "local.logout-all-protected-routes-401",
+            "status": "pass",
+            "seconds": 0.104
+          },
+          {
+            "case": "oidc.options",
+            "status": "pass",
+            "seconds": 0.007
+          },
+          {
+            "case": "oidc.code-pkce-pendingexact-wrongbinding-invalidstate",
+            "status": "pass",
+            "seconds": 0.064
+          },
+          {
+            "case": "oidc.member-real-browser-jit-repeat-single-use",
+            "status": "pass",
+            "seconds": 0.37
+          },
+          {
+            "case": "oidc.book-sync-isolation-metadata-invalid-snapshot",
+            "status": "pass",
+            "seconds": 0.069
+          },
+          {
+            "case": "oidc.logout-all-protected-routes-401",
+            "status": "pass",
+            "seconds": 0.076
+          },
+          {
+            "case": "oidc.admin-wins-both-groups",
+            "status": "pass",
+            "seconds": 0.149
+          },
+          {
+            "case": "oidc.unmatched-default-deny",
+            "status": "pass",
+            "seconds": 0.102
+          },
+          {
+            "case": "oidc.configurable-member-fallback-policy-revocation",
+            "status": "pass",
+            "seconds": 0.454
+          },
+          {
+            "case": "oidc.bad-exchange-never-member-fallback",
+            "status": "pass",
+            "seconds": 0.054
+          },
+          {
+            "case": "oidc.restore-deny-removes-existing-admission",
+            "status": "pass",
+            "seconds": 0.378
+          }
+        ],
+        "status": "pass",
+        "api_binary_sha256": "62c6ff997d68cc59cd598473e5bf18e610c5160e71791cf1dd41b7048f3cc4bb",
+        "postgres_server_version": "16.15",
+        "finished_at": "2026-10-30T17:38:08.695511+00:00",
+        "source_report": "validation/.runtime/postgres_20261030173803_3ba22bbe/report.json"
+      }
+    ]
+  },
+  "postgres_store_contract": {
+    "case": "store.persistent-account-contract-postgres",
+    "status": "pass",
+    "exit_code": 0,
+    "seconds": 5.285,
+    "database": "dedicated PostgreSQL database; DATABASE_URL set in subprocess environment",
+    "command": "cargo test --locked --offline store::tests::persistent_account_contract",
+    "sqlite_contract_also_runs": true,
+    "finished_at": "2026-10-30T17:38:01.000599+00:00",
+    "source_report": "validation/.runtime/store_20261030173755_4536ced1/report.json"
+  },
+  "root_verification_reported_by_main_agent": {
+    "cargo_test_locked_offline": {
+      "status": "pass",
+      "tests": 10
+    },
+    "cargo_clippy_all_targets_deny_warnings": {
+      "status": "pass"
+    }
+  },
+  "unverified": [
+    {
+      "item": "PostgreSQL 17",
+      "reason": "Image pull exhausted retries and ended with EOF; tested baseline is PostgreSQL 16.15"
+    },
+    {
+      "item": "Official RustDesk client GUI and cross-platform behavior",
+      "reason": "This run simulates browser forms and client HTTP protocol"
+    },
+    {
+      "item": "Production TLS, capacity and backup/restore",
+      "reason": "Local M0 development dependencies only"
+    }
+  ],
+  "security_scope": {
+    "secrets": "No passwords, bearer tokens, authorization URLs/codes or raw logs are included; runtime fixtures and raw logs remain ignored",
+    "address_book": "Metadata only; nonempty hash/password excluded and response header asserted",
+    "browser_cookie_policy": "Secure-cookie local-context exception restricted to exact 127.0.0.1:18080",
+    "database_isolation": "Fresh SQLite file directories and dedicated PostgreSQL databases; existing data preserved"
+  },
+  "follow_up_validation": {
+    "report": "validation/results/client-manual-2026-10-31.json",
+    "status": "pass",
+    "scope": "Subsequent user-operated official macOS arm64 RustDesk 1.5.0 client with read-only server evidence",
+    "cleanup": "Manual API and rustdesk-m0 Keycloak/PostgreSQL stopped; data retained; see companion report",
+    "historical_record_note": "service_state_at_recording and unverified describe this automated run at recorded_at; subsequent GUI evidence is separate"
+  }
+}

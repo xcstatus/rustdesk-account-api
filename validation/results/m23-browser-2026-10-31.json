@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-31",
+  "milestone": "M23",
+  "namespace": "20261031011719_815ec621",
+  "api_binary_sha256": "87a4958e11ff52752e7ececf633036ee0cc94cbe1869a8ee09f0888890a5bd0a",
+  "cases": [
+    {
+      "case": "admin-login-audit-entry",
+      "status": "pass"
+    },
+    {
+      "case": "audit-first-page-50",
+      "status": "pass"
+    },
+    {
+      "case": "audit-load-more-65-no-more",
+      "status": "pass"
+    },
+    {
+      "case": "target-filter-two-matching-events",
+      "status": "pass"
+    },
+    {
+      "case": "member-no-audit-entry",
+      "status": "pass"
+    },
+    {
+      "case": "logout-both-web-sessions",
+      "status": "pass"
+    }
+  ],
+  "browser": "CUA ChatGPT in-app browser",
+  "screenshot": "validation/results/m23-audit-2026-10-31.png",
+  "fixture_sessions": [
+    {
+      "kind": "web",
+      "revoked": true,
+      "count": 2
+    }
+  ],
+  "active_sessions_after_logout": 0,
+  "scope": "actual browser audit UI checks; no new official RustDesk GUI claim"
+}

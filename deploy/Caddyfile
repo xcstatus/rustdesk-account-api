@@ -1,0 +1,23 @@
+{
+	email {$ACME_EMAIL:admin@example.invalid}
+	admin off
+	# Error request logs can also include callback query strings during outages.
+	log default {
+		exclude http.log.access http.log.error
+	}
+}
+
+{$RD_DOMAIN:localhost} {
+	# Empty for public ACME; use "tls internal" for local testing.
+	{$CADDY_TLS_DIRECTIVE:}
+	# Access logging intentionally stays disabled: OIDC callback query is secret.
+	reverse_proxy api:21114 {
+		header_up -Forwarded
+		header_up -X-Real-IP
+		header_up -X-Forwarded-For
+		header_up -X-Forwarded-Host
+		header_up -X-Forwarded-Proto
+		header_up Host {http.request.host}
+		header_up X-Forwarded-Proto https
+	}
+}

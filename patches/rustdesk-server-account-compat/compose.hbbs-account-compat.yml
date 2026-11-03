@@ -1,0 +1,9 @@
+# Overlay for an existing OSS server Compose project with an hbbs service.
+# Keep the original command, ports/network, and /root data mount in the base.
+services:
+  hbbs:
+    image: rustdesk-hbbs-account-compat:1.1.16-v1-amd64
+    pull_policy: never
+    environment:
+      HBBS_ACCOUNT_SECURE_TCP: "1"
+      HBBS_ACCOUNT_SIGNING_KEY_FILE: /root/id_ed25519
