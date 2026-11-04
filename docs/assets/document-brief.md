@@ -1,5 +1,13 @@
 # 文档任务简报
 
+## 2026-11-04 仓库公开
+
+- document_type/purpose：仓库可见性与维护状态同步；用户明确要求公开`xcstatus/rustdesk-account-api`。
+- owner/review_owner：项目发起人决定公开；Codex执行发布核对、可见性变更与文档自检；长期材料归当前仓库。
+- scope/target_location：GitHub仓库可见性、README与安全/维护说明；out_of_scope：合并既有PR、选择项目许可证、生产部署、增加机器人或历史全矩阵重测。
+- upstream_sources：本轮用户授权、Git已跟踪历史、GitHub仓库API；downstream_consumers：访问公开仓库的维护者与使用者。
+- success_criteria：仓库API返回`PUBLIC`，公开说明与事实一致，真实私有运行资产不入库；document_status：`drafted`，实际可见性以GitHub为准。
+
 ## 2026-11-03 GitHub交付与安全自动化（E-19）
 
 - document_type：私有源码交付与安全维护说明；audience：项目负责人及仓库维护者。

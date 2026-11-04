@@ -27,7 +27,7 @@
 | 个人数据与设备 | 个人簿、凭据静态加密同步、登录关联归属、本人设备目录已实现；[扩展验收](device-credentials-validation.md) |
 | 官方双端 | 用户在官方1.5.0 macOS/Windows完成目录、个人簿跨端重登、Mac登录后远控和Windows同步后免输密码连接；[人工记录](../validation/results/device-credentials-client-manual-2026-10-31.json) |
 | 实例 | 已部署schema4账号API、共享PG和Traefik；hbbs使用固定PR #734；[扩展升级](device-credentials-deployment-2026-10-31.md)、[握手兼容](rendezvous-compatibility.md) |
-| 后续范围 | 团队共享通讯录尚未实现；生产OIDC、异地备份、外部告警及公开发布另行安排 |
+| 后续范围 | 团队共享通讯录尚未实现；生产OIDC、异地备份和外部告警另行安排；仓库已于2026-11-04公开，项目许可证待定 |
 
 文档整理完成不代表新增功能交付或对所有客户端平台兼容。测试账号最终收尾仍按人工记录单独保留，未当作已清理。
 

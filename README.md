@@ -10,7 +10,7 @@
 - 设备与同步：schema4已部署；官方1.5.0的macOS/Windows双端完成个人簿同步、设备目录、登录后远控和跨端免输密码连接。
 - 远控兼容：hbbs采用固定PR #734构建，hbbr保留原服务；不实现按用户/用户组限制远控。
 
-文档整理于2026-11-03；上述上线与实测依据2026-10-31记录，本次未重新巡检生产。公开开源及许可证尚未决定。
+文档整理于2026-11-03；上述上线与实测依据2026-10-31记录，本次未重新巡检生产。仓库于2026-11-04公开，项目许可证尚未确定。
 
 ## 项目入口
 
@@ -46,4 +46,4 @@ diagnostics/ 客户端问题诊断材料
 
 参考源码的初始版本见[sources.lock.json](sources.lock.json)，实际hbbs部署版本见[PR #734记录](docs/rendezvous-compatibility.md)。参考仓库保留各自历史与许可证，不把它们整体纳入账号API镜像。
 
-项目使用Git管理，远端为[GitHub私有仓库](https://github.com/xcstatus/rustdesk-account-api)。公开发布另行决定；私有运行资产与源码的边界见[维护计划](docs/maintenance.md)。
+项目使用Git管理，远端为[GitHub公开仓库](https://github.com/xcstatus/rustdesk-account-api)。私有运行资产与源码的边界见[维护计划](docs/maintenance.md)。

@@ -1,7 +1,7 @@
 # 安全维护与自动化
 
-- `document_status: drafted`；整理日期：2026-11-03；负责人：仓库维护者。
-- 仓库：[xcstatus/rustdesk-account-api](https://github.com/xcstatus/rustdesk-account-api)，当前为私有项目，尚未决定公开发布或项目许可证。
+- `document_status: drafted`；更新日期：2026-11-04；负责人：仓库维护者。
+- 仓库：[xcstatus/rustdesk-account-api](https://github.com/xcstatus/rustdesk-account-api)，2026-11-04按项目负责人要求公开；项目许可证尚未确定。
 - 自动化配置在[Dependabot](.github/dependabot.yml)、[依赖扫描](.github/workflows/security.yml)与[CI](.github/workflows/ci.yml)。实际执行结果以GitHub Actions与Security页面为准。
 
 ## 自动发现与修复流程
@@ -34,7 +34,7 @@
 
 依赖漏洞扫描依据已公开的公告，不是完整代码安全审计，也不能证明不存在漏洞。业务授权、OIDC使用方式、数据隔离、部署secret和服务器本身仍需在变更中审查。Docker版本更新不等同于已扫描生产镜像或宿主机漏洞。
 
-GitHub目前支持Rust的CodeQL，但Code scanning对私有仓库的可用性受所有权及GitHub Code Security授权限制。本项目是个人私有仓库，未假设具有该付费能力，未为启用它改成公开仓库或购买服务。来源：[GitHub CodeQL说明](https://docs.github.com/en/code-security/concepts/code-scanning/codeql/codeql-code-scanning)。后续授权满足时可单独增加Rust/TypeScript代码扫描。
+仓库公开后具备使用免费CodeQL代码扫描的条件，但本次仅变更可见性，尚未配置CodeQL、Rulesets或AI审查App；现有依赖扫描继续运行。来源：[GitHub CodeQL说明](https://docs.github.com/en/code-security/concepts/code-scanning/codeql/codeql-code-scanning)。后续可独立配置Rust/TypeScript代码扫描和PR审查，不能把可用性变化记作已启用。
 
 Dependabot的Cargo/npm/Actions支持情况见[官方生态支持表](https://docs.github.com/en/code-security/reference/supply-chain-security/supported-ecosystems-and-repositories)，其自动修复能力取决于漏洞库、依赖解析和可用修复版本，不能保证每条告警都会生成PR。
 
