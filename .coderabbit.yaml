@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# 配置参考：https://docs.coderabbit.ai/reference/configuration
+language: zh-CN
+early_access: false
+inheritance: false
+tone_instructions: >-
+  使用简体中文，简洁说明可确认的缺陷、触发条件、影响和修复建议；给出代码依据。
+  优先安全、数据完整性、权限和兼容性问题；不重复CI已报告的格式问题，不猜测缺陷，不为凑数提建议。
+
+reviews:
+  profile: chill
+  # 仅提供审查意见；不以机器人批准代替人工决定。
+  auto_approvals:
+    enabled: false
+  high_level_summary: true
+  high_level_summary_in_walkthrough: true
+  collapse_walkthrough: true
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  auto_apply_labels: false
+  suggested_reviewers: false
+  auto_assign_reviewers: false
+  in_progress_fortune: false
+  poem: false
+  # 精确覆盖官方默认忽略规则，不把审查范围限制为锁文件。
+  path_filters:
+    - "**/package-lock.json"
+    - "**/*.lock"
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    auto_pause_after_reviewed_commits: 0
+    drafts: true
+    # 默认分支始终包含；空列表不扩展到其他目标分支。
+    base_branches: []
+    ignore_usernames: []
+    ignore_title_keywords: []
+    labels: []
+  # 关闭代码生成/修复入口；不配置自动合并或合并后动作。
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+    simplify:
+      enabled: false
+    autofix:
+      enabled: false
+    fix_ci:
+      enabled: false
+    resolve_merge_conflict:
+      enabled: false
+  path_instructions:
+    - path: "**"
+      instructions: >-
+        按AGENTS.md与本次变更相关文档审查；需求以docs/PRD.md为准，行为以docs/logic.md和实际代码核对。
+        依赖更新需核实公告、受影响版本和锁文件；不能把既有RSA公告视为本PR已修复，
+        不能以扫描通过或AI审查结论代替修复证据。不要要求提交生产秘密或原始诊断数据。
+    - path: "api/**"
+      instructions: >-
+        重点检查SQLite/PostgreSQL业务与版本化前向迁移一致，事务内权限复核与并发撤销，
+        client/Web会话用途隔离及撤销范围；OIDC按issuer+sub绑定，默认拒绝，认证失败不得触发member兜底。
+        个人簿须隔离账号、原子提交元数据与凭据密文，解密失败不可降级为空数据；
+        设备归属和目录可见性不等于远控授权，不恢复已取消的远控ACL需求。
+    - path: "web/**"
+      instructions: >-
+        检查会话撤销后的操作、同源Cookie/CSRF边界、账号数据隔离和服务端权限校验；
+        隐藏按钮不能替代鉴权，不将设备归属展示解释为远控许可。
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "**/AGENTS.md"
+      - "docs/PRD.md"
+      - "docs/logic.md"
+      - "docs/architecture.md"

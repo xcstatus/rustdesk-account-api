@@ -201,4 +201,4 @@ hbbs采用的 PR #734另有固定提交及 `hbb_common`：见[PR部署包](../de
 修改配置/CLI/接口时更新 API README；代理、构建与页面约束更新 Web README；runner前置条件更新 validation README；部署、密钥和恢复更新运维入口/部署手册。
 业务规则、架构与需求状态分别更新 logic、architecture、PRD；新增验收记录保留日期与证据，不覆盖历史指纹。
 待办、维护责任与尚未验收范围统一交 [维护计划](maintenance.md)，不在多个文档复制一份待办表。
-项目使用GitHub公开仓库，Rust/Web CI与依赖安全自动化见[安全维护](../SECURITY.md)。项目许可证与镜像/版本发布仍由项目负责人决定。
+项目使用GitHub公开仓库，main变更走PR，通过Rust/Web CI并解决审查讨论后由维护者决定合并；CodeRabbit接入状态和依赖安全自动化见[安全维护](../SECURITY.md)。自有内容采用[非商业许可](../LICENSE)，第三方保留原许可，范围见[NOTICE](../NOTICE)；镜像/版本发布另行安排。

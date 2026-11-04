@@ -34,7 +34,7 @@ cp /absolute/path/to/dockerignore .dockerignore
 docker build --platform linux/amd64 -f /absolute/path/to/Dockerfile -t rustdesk-hbbs-account-compat:1.1.16-v1-amd64 .
 ```
 
-原始及新增源码继续遵循上游 LICENSE。版本指纹和执行结果以验收报告为准；构建成功不能代替官方客户端实机验收。
+本目录补丁与配套文件保留AGPL-3.0许可，全文见[LICENSE](../LICENSE)，来源与组件例外见[NOTICE](../../NOTICE)。原始及新增源码继续遵循适用的上游许可，不受根目录非商业许可重新授权。版本指纹和执行结果以验收报告为准；构建成功不能代替官方客户端实机验收。
 
 镜像附带只读入口探测器 `hbbs-account-probe HOST:PORT PUBLIC_KEY_FILE`，仅使用服务器公钥验证签名、加密/明文 TestNat 响应和空心跳，不需要账号 token，也不登记设备或发起远控。切换后可通过它核验真实端口；其成功结果仍不替代官方客户端验收。
 

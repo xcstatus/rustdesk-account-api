@@ -1,0 +1,34 @@
+RustDesk Account API
+Required Notice: Copyright (c) 2026 xcstatus and contributors.
+
+Except for the third-party material and exceptions below, this project's own
+account API, management Web, scripts, configuration and documentation are
+licensed under the PolyForm Noncommercial License 1.0.0 in LICENSE:
+https://polyformproject.org/licenses/noncommercial/1.0.0
+
+Third-party scope and exceptions
+
+* Third-party dependencies and referenced repositories retain their respective
+  licenses and copyright notices. The root noncommercial license does not
+  relicense them or impose a noncommercial restriction on them. Source pins and
+  research license metadata are recorded in sources.lock.json.
+
+* patches/rustdesk-server-account-compat/ retains the GNU Affero General Public
+  License version 3 terms for the RustDesk server patch and its supporting files.
+  The full text is in patches/LICENSE. Its fixed server source is
+  https://github.com/rustdesk/rustdesk-server/tree/73523b31cfd25d77dee862e6fc9f5e1fb5e485ef
+  Referenced components, including hbb_common, retain their upstream notices;
+  this notice does not grant or change their independent licenses.
+
+* patches/macos-command-click-1.5.0.patch modifies the MIT-licensed Enigo
+  component and is distributed under MIT, including this project's changes.
+  Preserve the full license and original Copyright (c) 2017 pythoneer notice
+  in patches/LICENSE.enigo-MIT. The fixed component source is
+  https://github.com/rustdesk/rustdesk/tree/fada664df7a294d1d1a9ca3e7cd3637069122f17/libs/enigo
+
+The hbbs PR #734 deployment builds separately obtained upstream source; it is
+not relicensed under PolyForm. Preserve the applicable upstream licenses and
+source obligations when distributing that software or images built from it.
+
+RustDesk is the name of the upstream project. This is an independent compatible
+account service, not an official RustDesk release.

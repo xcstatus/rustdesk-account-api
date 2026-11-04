@@ -1,5 +1,14 @@
 # 文档任务简报
 
+## 2026-11-05 PR门禁、自动审查与非商业许可
+
+- document_type/purpose：按用户要求配置免费PR审查、保留人工合并，并采用禁止商用的项目许可；audience：维护者、贡献者和使用者。
+- owner/review_owner：项目发起人决定许可与维护策略；Codex负责配置、来源核对和静态验证；长期材料归本仓库。
+- scope/target_location：`.coderabbit.yaml`、`.github/rulesets/main.json`、LICENSE/NOTICE、包许可元数据与维护文档；out_of_scope：既有PR合并、生产变更、付费服务、全矩阵重测。
+- upstream_sources：本轮用户授权、PolyForm/SPDX原文、固定上游许可证、GitHub Rules API与CodeRabbit官方Schema；downstream_consumers：GitHub、CodeRabbit、源码使用者和后续发布维护者。
+- success_criteria：main启用PR与基础CI门禁，自动合并关闭；CodeRabbit配置通过Schema核验，App授权与实际审查分别确认；根许可仅覆盖自有内容，第三方原许可保留。
+- document_status：`reviewed`；App安装与运行状态见[安全维护](../../SECURITY.md)，不将配置文件等同于服务已接入。
+
 ## 2026-11-04 仓库公开
 
 - document_type/purpose：仓库可见性与维护状态同步；用户明确要求公开`xcstatus/rustdesk-account-api`。

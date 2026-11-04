@@ -1,7 +1,7 @@
 # 安全维护与自动化
 
-- `document_status: drafted`；更新日期：2026-11-04；负责人：仓库维护者。
-- 仓库：[xcstatus/rustdesk-account-api](https://github.com/xcstatus/rustdesk-account-api)，2026-11-04按项目负责人要求公开；项目许可证尚未确定。
+- `document_status: reviewed`；更新日期：2026-11-05；负责人：仓库维护者。
+- 仓库：[xcstatus/rustdesk-account-api](https://github.com/xcstatus/rustdesk-account-api)，2026-11-04按项目负责人要求公开；自有内容采用[非商业许可](LICENSE)，第三方范围见[NOTICE](NOTICE)。
 - 自动化配置在[Dependabot](.github/dependabot.yml)、[依赖扫描](.github/workflows/security.yml)与[CI](.github/workflows/ci.yml)。实际执行结果以GitHub Actions与Security页面为准。
 
 ## 自动发现与修复流程
@@ -20,6 +20,23 @@
 
 自动扫描、告警和修复PR已纳入维护流程；修复是否完整、是否可合并由维护者审核。不配置自动合并或自动部署。没有可用修复、需要跨大版本迁移、或仅由RustSec发现而GitHub尚未给出修复PR时，需按具体告警人工处理。
 
+## PR审查与合并
+
+main的`Protect main` Ruleset配置保存在[main.json](.github/rulesets/main.json)，仓库实际启用状态见[规则设置](https://github.com/xcstatus/rustdesk-account-api/settings/rules)。规则要求走PR、解决已有代码审查讨论，并通过以下GitHub Actions检查；禁止删除main和强制推送，不设置绕过者。
+
+JSON是可维护的规则定义；仅修改文件不会自动更新GitHub设置。后续通过规则设置编辑，或用Rules REST API按现有规则ID更新，再核对实际启用内容，避免重复创建。
+
+- `Rust / SQLite + PostgreSQL`
+- `Web / tests + build`
+
+保留人工决定是否合并，关闭仓库自动合并。项目目前由单维护者维护，额外批准人数设为0，避免本人创建的PR无法由本人批准；这不等于机器人批准。采用宽松状态检查，不强制每次main更新都重跑分支；维护者负责判断合并组合的兼容影响。
+
+[CodeRabbit配置](.coderabbit.yaml)对目标为默认分支的PR启用中文自动审查，包含草稿、Dependabot等bot PR及后续增量提交；关闭自动批准与代码修复入口。**当前配置已准备，GitHub App安装授权尚未完成，不能视为AI审查已生效。** 安装时仅授权本仓库；公开仓库免费政策见[官方说明](https://www.coderabbit.ai/faq)，接入后用一条实际PR核验，不启用付费服务。安装入口：[CodeRabbit GitHub App](https://github.com/apps/coderabbitai/installations/new)。
+
+CodeRabbit尚不列为必需检查；安装、限流、暂停或服务故障都可能影响审查。解决讨论的规则不会等待机器人开始审查，维护者应确认实际审查状态后再决定合并。工作流、测试脚本和审查配置本身的变更也需人工核对。
+
+RustSec/npm结果继续可见，但扫描工作流有路径过滤，未列为每条PR的必需检查，避免无关PR永久等待。现有RSA公告`RUSTSEC-2023-0071`仍未修复，不忽略或伪造扫描通过；维护者需结合受影响路径判断修复PR。扫描失败本身不会被本Ruleset强制阻断。
+
 ## 及时处理的约定
 
 1. 查看告警或扫描失败Issue，先区分实际漏洞、未维护提示与扫描基础设施错误。
@@ -34,7 +51,7 @@
 
 依赖漏洞扫描依据已公开的公告，不是完整代码安全审计，也不能证明不存在漏洞。业务授权、OIDC使用方式、数据隔离、部署secret和服务器本身仍需在变更中审查。Docker版本更新不等同于已扫描生产镜像或宿主机漏洞。
 
-仓库公开后具备使用免费CodeQL代码扫描的条件，但本次仅变更可见性，尚未配置CodeQL、Rulesets或AI审查App；现有依赖扫描继续运行。来源：[GitHub CodeQL说明](https://docs.github.com/en/code-security/concepts/code-scanning/codeql/codeql-code-scanning)。后续可独立配置Rust/TypeScript代码扫描和PR审查，不能把可用性变化记作已启用。
+CodeQL尚未配置，依赖扫描与AI审查也不能代替代码安全扫描；是否扩展Rust/TypeScript扫描另行安排。公开仓库的可用性见[GitHub CodeQL说明](https://docs.github.com/en/code-security/concepts/code-scanning/codeql/codeql-code-scanning)，不能把可用性变化记作已启用。
 
 Dependabot的Cargo/npm/Actions支持情况见[官方生态支持表](https://docs.github.com/en/code-security/reference/supply-chain-security/supported-ecosystems-and-repositories)，其自动修复能力取决于漏洞库、依赖解析和可用修复版本，不能保证每条告警都会生成PR。
 
@@ -42,4 +59,4 @@ Dependabot的Cargo/npm/Actions支持情况见[官方生态支持表](https://doc
 
 不要向Issue、PR、Actions日志或文档提交密码、token、私钥、个人簿hash、生产数据库或备份。原始运行截图、`.runtime`、secrets和构建资产不入库；CI使用的测试账号和PG密码仅为隔离runner中的公开fixture。
 
-发现疑似凭据泄露时，先在私有渠道通知仓库负责人，撤销/轮换实际凭据，再处理仓库历史；仅删除当前文件不能保证旧提交与日志中的凭据失效。公开发布前仍需单独检查报告、截图与实例画像，并确定许可证。
+发现疑似凭据泄露时，先在私有渠道通知仓库负责人，撤销/轮换实际凭据，再处理仓库历史；仅删除当前文件不能保证旧提交与日志中的凭据失效。每次分发仍需检查新增报告、截图与实例画像，并保留适用许可和声明。
